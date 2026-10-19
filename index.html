@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Intelligent HCI Midterm Kit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: sticky tab bar over a single study column; notes get a side index on wide screens. Blue-pen ink + highlighter marks. */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --sunk:#E5EAEF; --ink:#16202A; --muted:#55626F; --line:#D3DAE1;
+  --accent:#1D5FB0; --accent-soft:#DCE8F7; --on-accent:#FFFFFF;
+  --hl:#FFE270;
+  --good:#1B7A49; --good-soft:#DDF2E6; --bad:#B42318; --bad-soft:#FBE3E0;
+  --f-display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1419; --surface:#171E26; --sunk:#1F2731; --ink:#E5EAF0; --muted:#98A5B2; --line:#2A3440;
+  --accent:#7DB2F0; --accent-soft:#1C2E45; --on-accent:#0B1622; --hl:#5E4E0E;
+  --good:#5CC98F; --good-soft:#123222; --bad:#F2877C; --bad-soft:#3A1A17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1419; --surface:#171E26; --sunk:#1F2731; --ink:#E5EAF0; --muted:#98A5B2; --line:#2A3440;
+  --accent:#7DB2F0; --accent-soft:#1C2E45; --on-accent:#0B1622; --hl:#5E4E0E;
+  --good:#5CC98F; --good-soft:#123222; --bad:#F2877C; --bad-soft:#3A1A17; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:1060px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+h2{font-size:1.7rem;font-weight:800}
+h3{font-size:1.12rem;font-weight:600;margin-top:1.6rem;margin-bottom:.4rem}
+p{margin:.4rem 0}
+ul,ol{margin:.3rem 0;padding-left:1.25rem}
+li{margin:.18rem 0}
+mark{background:linear-gradient(180deg,transparent 48%,var(--hl) 48%);color:inherit;padding:0 .12em}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;flex-direction:column;gap:6px;padding-block:12px 0}
+.brand{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px}
+.brand h1{font-size:1.35rem;font-weight:800}
+.count{font-family:var(--f-mono);font-size:.82rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.count b{color:var(--ink)}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:8px 12px 10px;border-bottom:3px solid transparent;white-space:nowrap;color:var(--muted);font-weight:500}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--ink)}
+main{padding-block:22px 64px}
+
+/* shared */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:.88rem}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tbl{overflow-x:auto;margin:.5rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;background:var(--sunk)}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tip{border-left:3px solid var(--accent);background:var(--accent-soft);padding:8px 12px;border-radius:0 8px 8px 0;margin:.7rem 0;font-size:.93rem}
+.tip b:first-child{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;display:block;color:var(--accent)}
+.formula{font-family:var(--f-mono);background:var(--sunk);border-radius:8px;padding:8px 12px;margin:.5rem 0;overflow-x:auto;white-space:nowrap;font-size:.92rem}
+
+/* brief */
+.brief{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:22px}
+.brief .panel{display:flex;flex-direction:column;gap:4px;min-width:0}
+.brief .big{font-family:var(--f-display);font-size:1.35rem;font-weight:800;line-height:1.2}
+
+/* notes */
+.notes{display:grid;grid-template-columns:1fr;gap:22px}
+.toc{display:flex;flex-wrap:wrap;gap:6px}
+.toc a{text-decoration:none;color:var(--ink)}
+@media (min-width:900px){
+  .notes{grid-template-columns:190px minmax(0,1fr)}
+  .toc{flex-direction:column;position:sticky;top:120px;align-self:start;gap:2px}
+  .toc a.chip{border:0;border-radius:6px;background:none;padding:5px 10px}
+  .toc a.chip:hover{background:var(--sunk)}
+}
+.lec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px 24px;scroll-margin-top:120px;min-width:0}
+.lec + .lec{margin-top:18px}
+.lec header{display:flex;flex-direction:column;gap:2px;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.out{opacity:.6}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.split > div{min-width:0;background:var(--sunk);border-radius:8px;padding:10px 14px}
+.split h4{margin:0 0 4px;font-family:var(--f-display);font-size:1rem}
+
+/* flashcards */
+.fc-wrap{display:flex;flex-direction:column;gap:14px;max-width:720px}
+.card{perspective:1200px;cursor:pointer;min-height:250px;display:grid}
+.card-in{position:relative;display:grid;transition:transform .45s;transform-style:preserve-3d}
+.card.flip .card-in{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px 24px;display:flex;flex-direction:column;justify-content:center;gap:10px;min-height:250px}
+.face.back{transform:rotateY(180deg);background:var(--accent-soft)}
+.face .term{font-family:var(--f-display);font-size:1.45rem;font-weight:800;line-height:1.25}
+.face .def{font-size:1.02rem}
+.face .eyebrow{display:flex;justify-content:space-between}
+.bar{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+
+/* quiz */
+.qwrap{max-width:760px;display:flex;flex-direction:column;gap:14px}
+.qtext{font-family:var(--f-display);font-size:1.22rem;font-weight:600;line-height:1.35}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 14px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--ink)}
+.expl{margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--sunk);font-size:.95rem}
+.verdict-ok{color:var(--good);font-weight:600}
+.verdict-no{color:var(--bad);font-weight:600}
+.score{font-family:var(--f-display);font-size:2.6rem;font-weight:800;line-height:1}
+.missed li{margin:.6rem 0}
+
+/* anova */
+.lab{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:900px){.lab{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}}
+textarea,input[type=number],select{font-family:var(--f-mono);font-size:.95rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea{width:100%;min-height:130px;resize:vertical}
+.steps{counter-reset:s;list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:.8rem;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-top:2px}
+.steps .formula{margin:.25rem 0 0;white-space:normal}
+.decision{padding:10px 14px;border-radius:8px;font-weight:500}
+.decision.sig{background:var(--good-soft);color:var(--ink);border:1px solid var(--good)}
+.decision.ns{background:var(--bad-soft);color:var(--ink);border:1px solid var(--bad)}
+svg text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.prac{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.prac label{display:flex;flex-direction:column;gap:3px;font-size:.85rem;color:var(--muted);min-width:0}
+.prac input{width:100%}
+.prac input.ok{border-color:var(--good);background:var(--good-soft)}
+.prac input.no{border-color:var(--bad);background:var(--bad-soft)}
+
+/* essay */
+.essay{display:flex;flex-direction:column;gap:10px;max-width:820px}
+details.q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px}
+details.q summary{cursor:pointer;font-weight:600;list-style:none;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
+details.q summary::-webkit-details-marker{display:none}
+details.q summary .tag{font-family:var(--f-mono);font-size:.72rem;background:var(--sunk);border-radius:4px;padding:2px 6px;height:fit-content;margin-top:3px;color:var(--muted)}
+details.q[open] summary{margin-bottom:8px}
+details.q .ans{border-top:1px dashed var(--line);padding-top:8px}
+@media (prefers-reduced-motion:reduce){.card-in,.bar i{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Intelligent HCI Midterm Kit</h1>
+      <span class="count" id="countdown">COMP0455-001</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Study modes">
+      <button class="tab" role="tab" id="t-notes" data-v="notes">Notes</button>
+      <button class="tab" role="tab" id="t-cards" data-v="cards">Flashcards</button>
+      <button class="tab" role="tab" id="t-quiz" data-v="quiz">Quiz</button>
+      <button class="tab" role="tab" id="t-anova" data-v="anova">ANOVA Lab</button>
+      <button class="tab" role="tab" id="t-essay" data-v="essay">Written Answers</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ================= NOTES ================= -->
+<section id="v-notes">
+  <div class="brief">
+    <div class="panel"><span class="eyebrow">When</span><span class="big">Wed Oct 21 · 3:00 PM</span><span class="muted">Same classroom, assigned seats. Be there by 2:55.</span></div>
+    <div class="panel"><span class="eyebrow">Scope</span><span class="big">Lectures 1–6 (to ANOVA BSD)</span><span class="muted">Includes the Textoshop paper. WSD ANOVA, two-way ANOVA and post-hoc tests come after the cutoff.</span></div>
+    <div class="panel"><span class="eyebrow">Format</span><span class="big">MCQ · short · essay · calc</span><span class="muted">Complex equations are given or not needed. Key values and concepts can be asked.</span></div>
+  </div>
+
+  <div class="notes">
+    <nav class="toc" aria-label="Lectures">
+      <a class="chip" href="#l1">1 · Introduction</a>
+      <a class="chip" href="#l2">2 · Design process</a>
+      <a class="chip" href="#l3">3 · Conceptualizing</a>
+      <a class="chip" href="#lt">3+ · Textoshop</a>
+      <a class="chip" href="#l4">4 · Cognitive aspects</a>
+      <a class="chip" href="#l5">5 · Data gathering</a>
+      <a class="chip" href="#l6">6 · User study & ANOVA</a>
+    </nav>
+    <div>
+
+<article class="lec" id="l1">
+  <header><span class="eyebrow">Lecture 1</span><h2>Introduction to HCI</h2></header>
+
+  <h3>What is HCI? Three eras</h3>
+  <div class="tbl"><table>
+    <tr><th>Era</th><th>Focus</th><th>Example</th></tr>
+    <tr><td>Traditional</td><td>Studying how to develop systems that are <mark>convenient and easy to use</mark>; designing and evaluating for ease of use</td><td>Background color, button placement, sound effects</td></tr>
+    <tr><td>After 2000s</td><td>Scope expands to many users interacting with digital systems; how individuals <i>and groups</i> get an optimal UX</td><td>Social networking, checking traffic</td></tr>
+    <tr><td>After 2020s</td><td>AI: systems <mark>learn from data, assess situations, act autonomously</mark>. <b>HAII</b> (Human-AI Interaction): the domain (car, finance, health) changes input, output, processing, and the form of interaction</td><td>Domain-specific AI</td></tr>
+  </table></div>
+  <p>Even so, interaction design principles validated in the past are still important.</p>
+
+  <h3>UI, UX, usability</h3>
+  <ul>
+    <li><b>User Interface (UI)</b>: software/hardware that bridges human action and computer action. Maps the sensory, cognitive and social human world onto computational functions (Andy Ko).</li>
+    <li><b>User Experience (UX)</b> (ISO 9241-210:2010): <mark>a user's perceptions and responses that result from the use and/or anticipated use</mark> of a system, product or service. Covers emotions, beliefs, preferences, perceptions, comfort, behaviors and accomplishments <b>before, during and after</b> use.</li>
+    <li><b>Relationship</b>: User ↔ Experience ↔ Interaction ↔ Interface ↔ System/Data.<br><span class="muted">Example: a button sits in an unexpected place (interface) → I click Cancel by mistake (interaction) → I'm annoyed and have to redo it (experience).</span></li>
+    <li><b>Usability</b>: everything that supports achieving the user's goal when using a system, beyond basic functional convenience. Focus: can users <i>accurately</i> accomplish their goal despite the system's complexity? Developing usable products is the central concern of interaction design.</li>
+  </ul>
+
+  <h3>Switching to digital</h3>
+  <p>Pros: easier, quicker, more convenient; cost-efficient for companies. Cons: people who can't use the technology get left out, and it depends on things like battery and network.</p>
+
+  <h3>What to design</h3>
+  <p>Consider: <b>(1) who</b> will use it, <b>(2) how</b> it will be used, <b>(3) when and where</b>, <b>(4) what activities</b> people are doing while interacting.</p>
+  <div class="tip"><b>Key question of interaction design</b>“How do you optimize a person's interactions with a system, environment, or product so that they support their activities in <mark>effective, useful, usable, and pleasurable</mark> ways?”</div>
+  <p>Requires understanding people: what they're good and bad at; what helps the way they currently do things; what gives quality experiences; privacy concerns; listening and involving them; people-centered techniques.</p>
+
+  <h3>Interaction design (IxD)</h3>
+  <ul>
+    <li>Definition: <mark>“Designing interactive products to support the way people communicate and interact in their everyday and working lives.”</mark> Creating experiences that enhance and augment how people work, communicate and interact.</li>
+    <li>Differs from related fields in <b>methods, philosophies and lenses</b>, and in the <b>scope and problems</b> addressed.</li>
+    <li>Done by <b>multidisciplinary teams</b> (social scientists to movie-makers). (+) more creative ideas, new methods. (−) cost, hard to communicate and make progress. Interaction design consultancies can help.</li>
+  </ul>
+
+  <h3>People-centered design</h3>
+  <ul>
+    <li>A design philosophy that <mark>prioritizes the needs and desires of the people</mark> who will use a product. Includes how people feel about it: pleasure, satisfaction, overall impression, small details.</li>
+    <li>Don Norman: functional, understandable and usable isn't enough; we must also build <i>joy, excitement, pleasure, fun and beauty</i> into people's lives.</li>
+    <li>Aspects: usability, functionality, aesthetics, content, look and feel, emotional appeal (+ fun, health, social capital, cultural identity, education).</li>
+    <li>Experiential aspects: <b>Hornbæk & Hertzum</b>: how people perceive a product (is the smartwatch cool?) + their emotional reaction. <b>Marc et al.</b>: hedonic aspects related to well-being. <b>McCarthy & Wright</b>: people's expectations and how they make sense of their experiences.</li>
+  </ul>
+
+  <h3>Understanding people</h3>
+  <p>Helps design products that augment people and match their needs. Designers must understand <b>individual differences</b> (children, teens, adults), and learning about people can <b>reveal incorrect assumptions</b> (do older adults really want everything large?). Consider <b>age</b> (older adults may resist new tech), <b>culture</b> (MM/DD/YY vs YY/MM/DD), <b>accessibility</b>.</p>
+
+  <h3>Accessibility & inclusiveness</h3>
+  <div class="split">
+    <div><h4>Accessibility</h4>The extent to which a product is accessible by <mark>as many people as possible</mark>. Focus is on <b>people with disabilities</b>. Google/Apple give developers tools (screen readers, VoiceOver, hearing-aid compatibility).</div>
+    <div><h4>Inclusiveness</h4>Being <mark>fair, open and equal to everyone</mark>. Inclusive design is the overarching approach to accommodate the <b>widest possible number</b> of people.</div>
+  </div>
+  <ul>
+    <li>Why it matters: tech that requires one type of interaction can be impossible for someone with a disability, which is poor interaction design. Accessibility opens experiences to all (SMS was first designed for hearing-impaired people).</li>
+    <li>Two ways to achieve it: <b>inclusive design</b> and <b>assistive technology</b>.</li>
+    <li>Impairment types: <b>sensory</b> (vision/hearing), <b>physical</b> (loss of body parts/function), <b>cognitive</b> (memory, e.g. Alzheimer's). Each type is a complex mix (peripheral vision, color blindness, no light perception…).</li>
+    <li>Also <b>permanent / temporary / situational</b>.</li>
+    <li><mark>Fewer than 20% are born with a disability, but 80% will have one by age 85.</mark></li>
+    <li>Assistive tech is life-essential and an extension of the self (Holloway & Dawes). <b>DIX</b> (Disability Interactions): cross-disciplinary methods from HCI and disability. IoT, wearables, VR can improve existing assistive tech.</li>
+  </ul>
+
+  <h3>Usability goals</h3>
+  <div class="tbl"><table>
+    <tr><th>Goal</th><th>Meaning</th><th>Question to ask</th></tr>
+    <tr><td><b>Effectiveness</b></td><td>How good the product is at doing what it should</td><td>Can people do their work, access info, buy what they want?</td></tr>
+    <tr><td><b>Efficiency</b></td><td>How it supports people in carrying out tasks</td><td>How many steps to complete a task?</td></tr>
+    <tr><td><b>Safety</b></td><td>Protecting people from dangerous/undesirable situations</td><td>What errors are possible, and how easily can people recover?</td></tr>
+    <tr><td><b>Utility</b></td><td>Provides the right kind of functionality</td><td>Is there an appropriate set of functions for all their tasks?</td></tr>
+    <tr><td><b>Learnability</b></td><td>How easy it is to learn</td><td>Can someone work out basic use by exploring?</td></tr>
+    <tr><td><b>Memorability</b></td><td>How easy it is to remember how to use</td><td>What support helps people remember infrequent tasks?</td></tr>
+    <tr><td><b>Satisfaction</b></td><td>How acceptable it is in use</td><td>Mean/median/mode on the CSAT scale; % highly satisfied?</td></tr>
+  </table></div>
+  <p><b>UX goals</b>: desirable vs undesirable aspects depend on the situation (music in the shower vs in the car). Even a single action at the interface can affect UX quality.</p>
+
+  <h3>Design principles</h3>
+  <div class="tbl"><table>
+    <tr><th>Principle</th><th>Meaning</th><th>Example</th></tr>
+    <tr><td><b>Visibility</b></td><td>Interface shows what someone needs to do next</td><td>Clearly visible controls and indicators</td></tr>
+    <tr><td><b>Feedback</b></td><td>Informing the user of system changes (text, color, sound…)</td><td>Click sound, progress bar</td></tr>
+    <tr><td><b>Constraints</b></td><td>Restricting options to those appropriate for the situation</td><td>Greyed-out menu items</td></tr>
+    <tr><td><b>Mapping</b></td><td>Logical, clear relation to real-world counterparts</td><td>Arrow keys laid out up/down/left/right</td></tr>
+    <tr><td><b>Consistency</b></td><td>Similar elements & operations for similar tasks</td><td>Same shortcut does the same thing everywhere</td></tr>
+    <tr><td><b>Affordance</b></td><td>Lets people know how to use it (“give it a clue”)</td><td>Push plate vs pull handle on a door</td></tr>
+  </table></div>
+</article>
+
+<article class="lec" id="l2">
+  <header><span class="eyebrow">Lecture 2</span><h2>The Process of Interaction Design</h2></header>
+  <p>Interaction design involves: <b>discovering requirements</b>, <b>designing</b> to fulfill them, and <b>producing prototypes</b> for evaluation. Identifying, understanding and engaging <b>stakeholders</b> is fundamental. People-centered concerns come before technical ones.</p>
+
+  <h3>The Double Diamond</h3>
+  <p>Four phases in two diamonds. Each diamond opens with <mark>divergent thinking</mark> (considering the problem widely) and closes with <mark>convergent thinking</mark> (focusing on a particular response).</p>
+  <div class="tbl"><table>
+    <tr><th>Phase</th><th>What happens</th></tr>
+    <tr><td><b>1. Discover</b></td><td>Understand the problem rather than assume, by talking to the people affected by it</td></tr>
+    <tr><td><b>2. Define</b></td><td>Use the insight from Discover to define the design challenge (often in a different way)</td></tr>
+    <tr><td><b>3. Develop</b></td><td>Create different responses, inspired by competing products, insights, brainstorming</td></tr>
+    <tr><td><b>4. Deliver</b></td><td>Test different solutions at small scale; reject or improve them</td></tr>
+  </table></div>
+  <ul>
+    <li><b>Not linear</b>: phases are iterated. “In an ever-changing digital world, no idea is ever finished.”</li>
+    <li>Supported by <b>design principles</b>, a <b>methods bank</b>, and two traits of organization culture: <b>engagement</b> and <b>leadership</b>.</li>
+    <li>Four design principles: <mark>focus on people, communication, collaboration, iteration</mark>.</li>
+  </ul>
+
+  <h3>Who to involve</h3>
+  <ul>
+    <li><b>Stakeholders</b>: individuals or groups who can <mark>influence or be influenced by the success or failure</mark> of a project/product (customers, managers, policymakers, supervisors). Ask: who is interested, who has influence/control, who will be affected? Make a list to decide who to involve and how much.</li>
+    <li><b>Product owner</b>: filters user/customer input into the development cycle and prioritizes requirements (common in commercial projects). (−) limited view; can't predict how customers respond. So involve <b>potential users across all stages</b>.</li>
+  </ul>
+  <div class="split">
+    <div><h4>Expectation management</h4>Making sure expectations of the new product are <b>realistic</b>, so there are no negative surprises at release. Users see the product's capabilities early.</div>
+    <div><h4>Ownership</h4>Users who are involved and feel they contributed get a <b>sense of ownership</b>, so they are more likely to support its use.</div>
+  </div>
+  <ul>
+    <li>Dilemma: how much involvement, in what role? <b>Abelein et al. (2013)</b> review: involvement has a positive effect, but large variation means no consistent way to measure it; studies reporting negative correlations are 10+ years old. Key: <b>who, when, where, how</b>.</li>
+    <li>Degrees of involvement: face-to-face individual vs hundreds online; part-time vs full-time; <b>personas</b> when involvement is limited. Online: feedback exchange systems, crowdsourcing, citizen engagement, <b>participatory design</b> (co-design). Consider individual circumstances and customer experience (interacting with a brand, not just a product).</li>
+    <li>Examples: Windows error-reporting system; participatory design of vibration warnings on a car seat.</li>
+  </ul>
+
+  <h3>Gould & Lewis (1985): three principles</h3>
+  <ol>
+    <li><b>Early focus on users and tasks</b>: directly study users' cognitive, behavioral, anthropomorphic and attitudinal characteristics.</li>
+    <li><b>Empirical measurement</b>: observe and measure reactions/performance to scenarios and manuals, then to simulations and prototypes.</li>
+    <li><b>Iterative design</b>: test and observe again to see the effect of fixes.</li>
+  </ol>
+  <p>These are the basis of a <b>user-centered approach</b>, extended to: tasks and goals drive development; behavior and context are studied; people's characteristics are designed for; people are consulted from start to finish; all decisions are made in context; usability/UX goals are identified, documented and agreed at the start; iteration through data gathering, design and evaluation.</p>
+
+  <h3>Four basic activities</h3>
+  <ol>
+    <li><mark>Discovering requirements</mark></li>
+    <li><mark>Designing alternatives</mark> that meet them</li>
+    <li><mark>Prototyping</mark> the alternatives so they can be communicated and assessed</li>
+    <li><mark>Evaluating</mark> the product and its UX throughout</li>
+  </ol>
+  <p>A <b>simple lifecycle model</b> links these in an iterative loop (Discover → Design ⇄ Prototype → Evaluate → final product). Other models: <b>Design Sprint</b>, <b>Research in the Wild</b>.</p>
+
+  <h3>Practical issues</h3>
+  <ol>
+    <li>How to find out what people need</li>
+    <li>How to decide what to design: understand the <b>problem space</b> (current UX, why and how to change it)</li>
+    <li>How to generate alternatives: creativity (e.g. SCAMPER)</li>
+    <li>How to choose among alternatives: discussion, prototyping, <b>A/B testing</b> (two versions shown to different users, compare results), quality</li>
+    <li>How to integrate IxD with other lifecycle models</li>
+  </ol>
+</article>
+
+<article class="lec" id="l3">
+  <header><span class="eyebrow">Lecture 3</span><h2>Conceptualizing Interaction</h2></header>
+  <p>Conceptualize what the product will do (a <b>proof of concept</b>). Show where ideas came from, what inspired them, and any theory supporting them. Asking questions, reconsidering assumptions and articulating concerns are central to early ideation.</p>
+
+  <h3>Assumptions and claims</h3>
+  <div class="split">
+    <div><h4>Assumption</h4>Taking something <mark>for granted</mark> that requires further investigation.</div>
+    <div><h4>Claim</h4>Stating what <mark>would happen</mark> in the future if an action were taken or a product introduced.</div>
+  </div>
+  <p class="muted">Example: an engineer <b>claims</b> bookmarks are no longer needed because he <b>assumes</b> most people revisit sites through their history like he does.</p>
+  <p>Core questions: Is there a problem with an existing product/UX? Why do you think so? What evidence? How would your design overcome it?</p>
+
+  <h3>Conceptual models</h3>
+  <ul>
+    <li><b>Model</b>: a simplified description of a system or process that helps describe how it works.</li>
+    <li><b>Conceptual model</b>: <mark>a high-level description of how a system is organized and operates</mark> (Johnson & Henderson, 2002). Outlines what people can do with a product and what concepts they need to understand to interact with it.</li>
+  </ul>
+  <p><b>Core components</b>:</p>
+  <ol>
+    <li><b>Metaphors and analogies</b>: convey what the product is for and how to use it (browsing, bookmarking)</li>
+    <li><b>Concepts</b>: task-domain objects, their attributes, and the operations on them (saving, revisiting, organizing)</li>
+    <li><b>Relationships</b> between concepts (a folder contains files)</li>
+    <li><b>Mappings</b> between concepts and the UX the product supports (revisit a page via history, most-visited, or saved sites)</li>
+  </ol>
+  <div class="tbl"><table>
+    <tr><th></th><th>Desktop</th><th>Spreadsheet (new concept)</th></tr>
+    <tr><td>Concepts</td><td>File, folder, trash, desktop</td><td>Cell, formula, reference</td></tr>
+    <tr><td>Relationships</td><td>File in folder, nested, move</td><td>A cell refers to another cell</td></tr>
+    <tr><td>Mappings</td><td>Real documents, office experience</td><td>Change a value → all related calculations update</td></tr>
+  </table></div>
+  <p>The best conceptual models are <mark>obvious and simple</mark>, with intuitive operations (though upgrades can make them complex). A conceptual model can serve as a <b>shared blueprint</b> (text or diagram). Completely new conceptual models are rare.</p>
+
+  <h3>Interface metaphors</h3>
+  <ul>
+    <li>A <b>central component</b> of a conceptual model. Provide <mark>familiar entities</mark> so people can readily understand the underlying model (search <i>engine</i>, shopping <i>cart</i>).</li>
+    <li>Downsides: they can <b>contravene people's expectations</b>; useful visual metaphors for many tasks (buying a ticket, finding a reference) are hard to find (Alan Cooper).</li>
+    <li>Used in three ways: (1) to <b>conceptualize what we are doing</b> (live <i>streaming</i>); (2) as a <b>conceptual model at the interface level</b> (the card metaphor); (3) to <b>visualize an operation</b> (shopping-cart icon).</li>
+  </ul>
+
+  <h3>Five interaction types</h3>
+  <div class="tbl"><table>
+    <tr><th>Type</th><th>What it is</th><th>Strength / example</th></tr>
+    <tr><td><b>Instructing</b></td><td>Typing commands, selecting options, pressing buttons</td><td>Quick and efficient for repetitive actions (save, delete); vending machines</td></tr>
+    <tr><td><b>Conversing</b></td><td>Having a conversation with a system acting as a dialogue partner</td><td>Two-way communication; advisory systems, chatbots, Siri</td></tr>
+    <tr><td><b>Manipulating</b></td><td>Using knowledge of how we handle things in the physical world</td><td>Feels like <i>directly controlling</i> digital objects; VR controllers, drag & drop</td></tr>
+    <tr><td><b>Exploring</b></td><td>Moving through virtual or physical environments</td><td>3D environments, digital twins</td></tr>
+    <tr><td><b>Responding</b></td><td>The <mark>system takes the initiative</mark> to alert, describe or show something; the person responds</td><td>Smartwatch alerts, proactive notifications</td></tr>
+  </table></div>
+  <p>Deciding which interaction types to use, and why, helps conceptualize the design space.</p>
+</article>
+
+<article class="lec" id="lt">
+  <header><span class="eyebrow">Paper · CHI 2025</span><h2>Textoshop</h2><span class="muted">Interactions inspired by drawing software to facilitate text editing (Masson, Kim, Chevalier)</span></header>
+  <div class="tip"><b>Why it's in the course</b>A worked example of an <b>interface metaphor</b> (Lecture 3): it borrows the drawing-software (Photoshop) model of tools, layers and direct manipulation and applies it to text. Its user study is also a <b>within-subject</b> comparison (each of the 12 participants rated both conditions).</div>
+  <h3>Problems with current text editors</h3>
+  <ol>
+    <li>Organizing is limited when relying only on the <b>sheet-of-paper metaphor</b></li>
+    <li>Exploring possible text variations is difficult</li>
+    <li>Reorganizing ideas already written is tedious</li>
+    <li>Managing and rendering different versions is tedious</li>
+  </ol>
+  <p class="muted">Related work: non-linear editors (hypertext, Scrivener); LLM variations; reordering (Langsmith, VISAR); versioning (ABScribe, Google Docs).</p>
+  <h3>Taxonomy of writing changes</h3>
+  <p><b>Formal</b> changes (spelling, tense, number) · <b>meaning-preserving</b> changes (synonyms, reordering) · <b>micro vs macro</b> changes (different scales of writing).</p>
+  <h3>Features</h3>
+  <ul>
+    <li><b>Direct manipulation</b>: drag, <b>resize</b> (shorten/expand text), <b>rotate</b> (rephrase/reorder), split.</li>
+    <li><b>Tools</b>: Tone Brush (changes tone) · Tone Eyedropper (copies tone from one passage) · Smudge (regenerates/smooths) · Singularizer/Pluralizer (number + agreement) · Past/Present/Future Tense Changer · Repair (grammar, spelling, punctuation) · Eraser (deletes but keeps the sentence correct) · Prompt (LLM prompt inserts text).</li>
+    <li><b>Tone Picker</b>: a color wheel of tones + sliders <i>informal↔formal</i>, <i>negative↔positive</i>, <i>complicated↔simple</i>.</li>
+    <li><b>Boolean operations on sentences</b>: <mark>Unite</mark> (combine both) · <mark>Intersect</mark> (keep only shared ideas) · <mark>Subtract</mark> (remove one passage's ideas from another) · <mark>Exclude</mark> (drop overlap, keep non-redundant ideas) · Insert (drop passage in a new position).</li>
+    <li><b>Text layers</b>: stack edits as layers and toggle visibility to compare versions.</li>
+  </ul>
+  <h3>User study</h3>
+  <ul>
+    <li><b>12 participants</b>, remote (website + Zoom), CAD$20 gift card.</li>
+    <li>Conditions: <b>Baseline vs Textoshop</b>. 4 tasks: shorten/expand a story; organize and integrate fragments; change the tone of dialogue; write emails from a template.</li>
+    <li>Measures: <b>SUS</b> (System Usability Scale) + 5-point difficulty questions; free-form exploration + <b>semi-structured interview</b>.</li>
+    <li>Result: Textoshop rated easier on every item (e.g. precisely shortening/expanding text, lower effort, lower mental demand, less frustration).</li>
+  </ul>
+</article>
+
+<article class="lec" id="l4">
+  <header><span class="eyebrow">Lecture 4</span><h2>Cognitive Aspects</h2></header>
+  <h3>What is cognition?</h3>
+  <ul>
+    <li>Thinking, remembering, learning, daydreaming, decision-making, seeing, reading, writing, talking…</li>
+    <li>Two modes (<b>Norman, 1993</b>): <mark>Experiential</mark>: perceive, act and react intuitively and effortlessly. <mark>Reflective</mark>: mental effort, attention, judgment, decision-making; leads to new ideas and creativity.</li>
+    <li>Processes (Eysenck & Brysbaert, 2018): attention · perception · memory · learning · reading/speaking/listening · problem-solving/planning/reasoning/decision-making. They are <b>interdependent</b>; rarely one alone.</li>
+  </ul>
+
+  <h3>Attention</h3>
+  <p>Selecting things to concentrate on, at a point in time, from the available range. Ease depends on: <mark>(1) whether you have clear goals</mark> and <mark>(2) whether the needed info is salient</mark> in the environment.</p>
+  <ul>
+    <li>Multitasking: whether performance suffers depends on the <b>nature of the tasks</b> and how much attention each demands. Heavy media multitaskers are more easily distracted; it overloads the capacity to focus.</li>
+    <li><b>Bowman et al. 2010</b>: students messaging took up to <b>50% longer</b> to read a passage. <b>Uncapher & Wagner 2018</b>: no relationship. <b>Lottridge et al. 2015</b>: more complex; heavy multitaskers can benefit if distractions are task-relevant.</li>
+    <li>Design: make important info noticeable when needed (animation, color, underlining, ordering, spacing); don't overcomplicate; support switching and returning (gradually brightening lights, alert sounds).</li>
+  </ul>
+
+  <h3>Perception</h3>
+  <p>How information is acquired from the environment through the <b>five senses</b> and transformed into experiences (Roth, 1986). Plus <b>kinesthesia</b>: awareness of body position and movement via proprioceptors. Involves other processes (memory, attention, language). Dominance: <mark>vision > hearing > touch</mark>.</p>
+  <p>Design: icons easy to tell apart; white space to group info; distinct audio cues; good color contrast (consider color-vision deficiency); haptics used sparingly and distinctly.</p>
+
+  <h3>Memory</h3>
+  <ul>
+    <li>Recalling knowledge that lets us act appropriately. A <b>filtering process</b> decides what is remembered (not perfect).</li>
+    <li><b>Working memory</b> (recent, small amount) vs <b>long-term memory</b>. <mark>Magic number 7 ± 2</mark> chunks.</li>
+    <li>Factors: <b>attention/filtering</b> (doing exercises, discussing, notes help); <b>encoding context</b> (a familiar person in an unfamiliar place is hard to place); <mark>recognition is easier than recall</mark>; <b>modality</b> (visual cues are remembered well). Photo-taking impairment effect.</li>
+    <li>Considerations: passwords (memory load vs vulnerability); <b>digital forgetting</b> (helping people forget, e.g. after a breakup); memory loss support (<b>SenseCam</b>).</li>
+    <li>Design: keep tasks short and simple; support recognition (familiar menus, icons, consistent layouts); labels, folders, tags, colors to find info.</li>
+  </ul>
+
+  <h3>Learning</h3>
+  <p><b>Incidental</b> (no intention: faces, streets) vs <b>intentional</b> (goal-directed: languages, driving). Learning by instruction vs <b>by doing</b>; interactive tech offers alternative ways to learn.</p>
+
+  <h3>Cognitive frameworks</h3>
+  <ul>
+    <li><b>Mental model</b> (Craik, 1943): <mark>internal constructions of the external world that can be manipulated to make predictions and inferences</mark>. Develops as you learn more. Often <b>incomplete/erroneous</b>: e.g. cranking the thermostat to max to heat faster (“more is more”), pressing the elevator button repeatedly. People resist spending time learning how things work.</li>
+    <li><b>Gulfs</b> (Norman 1986; Hutchins et al. 1986): <mark>Gulf of execution</mark> = distance from the user to the physical system (how do I do it?). <mark>Gulf of evaluation</mark> = distance from the system back to the user (what happened?). Designers bridge the gulfs to reduce cognitive effort.</li>
+    <li><b>Information processing model</b>: 1980s metaphor of the mind as an information processor with ordered stages. Not used nowadays.</li>
+    <li><b>Cognitive load</b>: mental effort required to learn new info; keep it minimal. Measured with <b>NASA-TLX</b> (Hart & Staveland, 1988): six Likert items: <mark>mental demand, physical demand, temporal demand, performance, effort, frustration</mark>.</li>
+    <li><b>Distributed cognition</b> (Hutchins, 1995): analyzes <mark>people, tools and environment as one cognitive system</mark>. Example: airplane cockpit (pilot, captain, air-traffic control, instruments, sky/runway). Information is re-represented across media (speech, notes, instruments) = <b>representational state changes</b>. Design: maintain shared awareness and redundancy.</li>
+    <li><b>External cognition</b> (Scaife & Rogers, 1996): designing tech that empowers cognition while reducing effort. <b>Extended mind</b> (Clark & Chalmers, 1998): philosophical view that digital tech becomes an extension of our minds.</li>
+  </ul>
+  <div class="tbl"><table>
+    <tr><th>External cognition</th><th>Meaning</th><th>Example</th></tr>
+    <tr><td><b>Cognitive offloading</b></td><td>Turn knowledge into external representations to reduce memory load</td><td>Birthday reminders</td></tr>
+    <tr><td><b>Computational offloading</b></td><td>External representation helps carry out a computation</td><td>Pen and paper for long multiplication</td></tr>
+    <tr><td><b>Annotating</b></td><td>Modifying external representations to note changes</td><td>Crossing off or underlining done items</td></tr>
+    <tr><td><b>Cognitive tracing</b></td><td>Manipulating items into new orders or structures</td><td>Sorting things into different piles</td></tr>
+  </table></div>
+  <ul>
+    <li><b>Embodied interaction</b> (Dourish, 2001): practical engagement with the social and physical world; abstract thinking comes from <b>sensorimotor experience</b>. In HCI: how the body mediates interaction with tech (Klemmer et al., 2006) and emotional interaction (Höök, 2018).</li>
+  </ul>
+</article>
+
+<article class="lec" id="l5">
+  <header><span class="eyebrow">Lecture 5</span><h2>Data Gathering</h2></header>
+  <p>Data (quantitative or qualitative) helps understand a design, stakeholders' goals and behavior. Central to <b>discovering requirements</b> and <b>evaluation</b>. Three techniques: <b>interviews, questionnaires, observation</b>.</p>
+
+  <h3>Six key issues</h3>
+  <ol>
+    <li><b>Goal setting</b>: the goal decides the technique.</li>
+    <li><b>Identifying participants (sampling)</b>
+      <ul>
+        <li><i>Probability</i>: <b>random</b> (chosen randomly); <b>stratified</b> (split population into groups, e.g. school classes, then randomly sample each).</li>
+        <li><i>Nonprobability</i>: <b>convenience</b> (whoever is available).</li>
+        <li>Difference: <mark>whether results can be generalized</mark>.</li>
+      </ul></li>
+    <li><b>Relationship with participants</b>: clear, professional; <b>informed consent</b> (privacy, trust); <b>rapport</b> (relaxed, trusting); <b>incentives</b>.</li>
+    <li><b>Ethical considerations</b>: store data securely (encrypted?); too much info about the study → <b>bias</b>; hidden or false info → <b>ethical problems</b>.</li>
+    <li><b>Triangulation</b> (for <mark>reliability</mark>): <b>data</b> (different sources, times, places, people) · <b>investigator</b> (different researchers collect and interpret) · <b>theories</b> (different theoretical frameworks) · <b>methodological</b> (different data-gathering techniques).</li>
+    <li><b>Pilot study</b>: small trial run to find and fix problems (and predict results). <mark>Pilot participants cannot take part in the main study.</mark></li>
+  </ol>
+
+  <h3>Capturing data</h3>
+  <ul>
+    <li>Some methods need no capture (questionnaires, interaction logs). Choice depends on goal, context, resources, time.</li>
+    <li><b>Notes + photos</b>: least technical, most flexible.</li>
+    <li><b>Audio + photos</b>: <mark>less intrusive than video</mark>, but harder to interpret afterwards (noise, unclear words).</li>
+    <li><b>Video</b>: good quality, needs huge storage, sometimes mandatory (disabled participants, field studies), hard to decode, privacy issues.</li>
+  </ul>
+
+  <h3>Interviews: “a conversation with a purpose” (Kahn & Cannell, 1957)</h3>
+  <div class="tbl"><table>
+    <tr><th>Type</th><th>Features</th><th>Pros / cons</th></tr>
+    <tr><td><b>Unstructured (open-ended)</b></td><td>Exploratory, like a conversation; open questions; probing (“tell me more…”); needs a plan of main topics</td><td>+ rich, in-depth data, reveals new issues · − inconsistent across participants, time-consuming to analyze</td></tr>
+    <tr><td><b>Structured</b></td><td>Predetermined standardized questions, usually closed; short and clear; <b>same questions, same order</b> for all</td><td>+ quick; good when goals are clear and time is short</td></tr>
+    <tr><td><b>Semi-structured</b></td><td>Mix of closed and open questions; basic script covers same topics for all</td><td>Avoid leading questions; watch body language/tone; use neutral probes</td></tr>
+    <tr><td><b>Focus group</b></td><td><mark>3–10 people</mark>, trained facilitator, different user types/stakeholders, preset but flexible agenda</td><td>+ diverse views, shared issues & conflicts · − needs skilled facilitation; <b>groupthink</b> or domination by a few</td></tr>
+  </table></div>
+  <p><b>Writing questions</b>: avoid long/compound questions, avoid jargon, keep neutral.<br><b>Running an interview</b>: <mark>Introduction → Warm-up → Main session → Cooling-off → Closing</mark>.</p>
+
+  <h3>Questionnaires</h3>
+  <ul>
+    <li>Large-scale data efficiently; closed + open questions; best when respondents are motivated to answer on their own.</li>
+    <li>vs <b>structured interview</b>: interview is better when persuasion is needed and lets you pick participants and clarify ambiguity, but costs more researcher time.</li>
+    <li>Structure: demographics first, then goal-related questions grouped by topic. <b>Question order can influence answers</b>. Different versions for different populations; clear instructions; concise; allow opt-outs; use white space.</li>
+    <li>Closed questions: include “No opinion / None of these”. Radio buttons = <b>one choice</b>; check boxes = <b>multiple</b>; drop-downs = hidden lists.</li>
+    <li>Ranges: <mark>don't overlap</mark> (15–19, 20–24, not 15–20, 20–25). Intervals needn't be equal.</li>
+    <li><b>Likert scale</b>: agreement with a statement (1 strongly disagree … 5 strongly agree). Steps: gather a pool of short statements → decide the scale (points, layout) → select and reword items.</li>
+    <li><b>Semantic differential</b>: bipolar adjective pairs (Useful–Useless, Clear–Confusing); mix positive/negative sides to reduce bias.</li>
+  </ul>
+
+  <h3>Levels of measurement</h3>
+  <div class="tbl"><table>
+    <tr><th>Scale</th><th>Meaning</th><th>Examples</th><th>Statistics</th><th>Common tests</th></tr>
+    <tr><td><b>Nominal</b></td><td>Categories, no order</td><td>Gender, device type</td><td>Count, mode, frequency</td><td>Chi-square</td></tr>
+    <tr><td><b>Ordinal</b></td><td>Ordered, unequal distances</td><td>Likert item, ranking</td><td>Median, percentiles, rank</td><td>Mann-Whitney U, Kruskal-Wallis</td></tr>
+    <tr><td><b>Interval</b></td><td>Equal intervals, <b>no true zero</b></td><td>°C/°F, calendar years</td><td>Add/subtract, mean, SD</td><td>t-test, ANOVA</td></tr>
+    <tr><td><b>Ratio</b></td><td>Equal intervals, <b>true zero</b></td><td>Task time, # clicks, age</td><td>All math</td><td>t-test, ANOVA, correlation, regression</td></tr>
+  </table></div>
+  <p>Rules of thumb: categorical user info → nominal; survey data → often ordinal; psychometric scores (<b>SUS, NASA-TLX</b>) → treated as interval; system logs (time, clicks) → ratio.</p>
+  <div class="split">
+    <div><h4>Unipolar</h4>0 → positive extreme (“Not at all satisfied – Very satisfied”). Measures <b>amount/intensity</b>. “How likely are you to recommend this app?”</div>
+    <div><h4>Bipolar</h4>Negative → positive (“Very dissatisfied – Very satisfied”). Measures <b>direction and intensity</b>. “How pleasant or unpleasant was it?”</div>
+  </div>
+  <p><mark>Don't mix both types in one survey.</mark> Wording matters: “How satisfied are you?” vs “How satisfied or dissatisfied are you?”</p>
+
+  <h3>Observation</h3>
+  <ul>
+    <li><b>Direct</b> (watch people) vs <b>indirect</b> (study records: logs, diaries, video, analytics). <b>In the wild</b> (natural setting) vs <b>controlled</b> (specified tasks in a lab).</li>
+    <li><b>Direct, in the wild</b>: + real behavior and context · − complex, messy data. Keep focus with a framework: <i>Person, Place, Thing</i> or <i>Space, Actors, Activities, Objects, Acts, Events, Time, Goals, Feelings</i>.</li>
+    <li>Degree of participation: <b>passive observer</b> (outsider) ↔ <b>participant observer</b> (insider, richer insight but harder to stay objective).</li>
+    <li><b>Ethnography</b>: long-form participant observation, viewing everything as “strange”; mixes observation, interviews, artifacts. Digital ethnography: technology tours, hybrid online + physical.</li>
+    <li><b>Direct, controlled</b>: script for consistency; multi-camera (face, interface, body). <b>Think-aloud</b>: participants verbalize goals, expectations, confusion to <mark>reveal cognition</mark>; can slightly affect performance, so be consistent.</li>
+    <li><b>Indirect</b>: <b>diaries</b> (+ low researcher time, long studies · − memory and compliance issues); <b>ESM</b> (experience sampling: random or strategic prompts, immediate capture); <b>interaction logs</b> (keys, clicks, time, navigation; unobtrusive, large-scale); social/web traces (scale and ethics issues).</li>
+  </ul>
+</article>
+
+<article class="lec" id="l6">
+  <header><span class="eyebrow">Lecture 6 · up to ANOVA–BSD</span><h2>User Study & One-Way ANOVA</h2></header>
+
+  <h3>Study design (coffee example: which of A, B, C is preferred?)</h3>
+  <div class="split">
+    <div><h4>Between-subject (BSD)</h4>Each participant experiences <mark>only one condition</mark> (30 people: 10 taste A, 10 B, 10 C).<br><span class="muted">+ no learning/order carry-over · − needs more people; individual differences add noise</span></div>
+    <div><h4>Within-subject (WSD)</h4>Each participant experiences <mark>all conditions</mark> (30 people taste A, B and C).<br><span class="muted">+ fewer people; removes participant effect · − order/learning/fatigue effects (counterbalance)</span></div>
+  </div>
+  <p><b>Mixed design</b>: some factors between, some within.</p>
+  <div class="formula">BSD: X<sub>ij</sub> = μ + α<sub>i</sub> + ε<sub>ij</sub> &nbsp;&nbsp;|&nbsp;&nbsp; WSD: X<sub>ij</sub> = μ + α<sub>i</sub> + S<sub>j</sub> + ε<sub>ij</sub></div>
+  <p>μ = grand mean · α<sub>i</sub> = treatment effect of condition i · S<sub>j</sub> = subject (participant) effect of person j · ε = residual/noise (in BSD this includes individual differences; in WSD it is the condition × participant interaction).</p>
+
+  <h3>Variables</h3>
+  <ul>
+    <li><b>Independent variable (cause)</b>: what the researcher manipulates. <i>Type of coffee.</i></li>
+    <li><b>Dependent variable (effect)</b>: what is measured. <i>Satisfaction score.</i></li>
+    <li><b>Controlled variable (constant)</b>: kept the same so results are valid. <i>Temperature, cups, time.</i></li>
+  </ul>
+
+  <h3>Why ANOVA?</h3>
+  <p>Tests whether differences between group means are <b>significant</b>. A t-test handles only <b>two</b> groups; for <mark>k ≥ 3</mark> groups we need ANOVA (Analysis of Variance).</p>
+  <ul>
+    <li><b>H<sub>0</sub></b>: there is no significant difference among the means μ<sub>1</sub>, μ<sub>2</sub>, …, μ<sub>k</sub>. <b>H<sub>A</sub></b>: at least one mean differs.</li>
+    <li>Assumption: errors ε<sub>ij</sub> ~ N(0, σ²) (normally distributed, equal variance).</li>
+  </ul>
+
+  <h3>Splitting the variability</h3>
+  <div class="formula">Total variability = Between-group variability + Within-group variability &nbsp;→&nbsp; SS<sub>T</sub> = SS<sub>B</sub> + SS<sub>W</sub></div>
+  <div class="tbl"><table>
+    <tr><th>Sum of squares</th><th>Formula</th><th>Meaning</th></tr>
+    <tr><td>SS<sub>T</sub> (total)</td><td class="mono">Σ<sub>i</sub>Σ<sub>j</sub>(X<sub>ij</sub> − X̄)²</td><td>Each observation vs grand mean</td></tr>
+    <tr><td>SS<sub>B</sub> (between)</td><td class="mono">Σ<sub>i</sub> n<sub>i</sub>(X̄<sub>i</sub> − X̄)²</td><td>How far each <b>group mean</b> is from the grand mean</td></tr>
+    <tr><td>SS<sub>W</sub> (within)</td><td class="mono">Σ<sub>i</sub>Σ<sub>j</sub>(X<sub>ij</sub> − X̄<sub>i</sub>)²</td><td>How far each observation is from <b>its own group mean</b></td></tr>
+  </table></div>
+  <div class="tip"><b>Watch out</b>“Between/within-<i>group</i> variability” is a different idea from between/within-<i>subject</i> design.</div>
+  <p>You can't compare SS<sub>B</sub> and SS<sub>W</sub> directly; they're <b>distorted by group sizes</b>. Divide each by its <b>degrees of freedom</b> to get a variance, the <b>mean square (MS)</b>.</p>
+
+  <h3>Degrees of freedom</h3>
+  <p>df = the number of independent pieces of information contributing to an SS. If 3 values have mean 5 and two are known, the third is fixed, so df = n − 1.</p>
+  <div class="formula">df<sub>T</sub> = N − 1 &nbsp;=&nbsp; df<sub>B</sub> = k − 1 &nbsp;+&nbsp; df<sub>W</sub> = N − k &nbsp;&nbsp;(k = # groups, N = # total observations)</div>
+
+  <h3>F-value</h3>
+  <div class="formula">MS<sub>B</sub> = SS<sub>B</sub> / (k − 1) &nbsp;&nbsp; MS<sub>W</sub> = SS<sub>W</sub> / (N − k) &nbsp;&nbsp; <b>F = MS<sub>B</sub> / MS<sub>W</sub></b> ~ F(k − 1, N − k)</div>
+  <ul>
+    <li>F compares <b>between-group variance</b> to <b>within-group variance</b> (effect vs noise).</li>
+    <li>Background (formulas given if needed): a sum of n squared N(0,1) variables follows χ²(n); (n−1)S²/σ² ~ χ²(n−1); a ratio of two independent χ² variables, each divided by its df, follows the F distribution.</li>
+    <li><mark>Large F</mark> → between-group variance ↑, within-group variance ↓ → more likely significant → reject H<sub>0</sub>.</li>
+  </ul>
+
+  <h3>p-value and errors</h3>
+  <div class="formula">p = P(F > F<sub>obs</sub> | H<sub>0</sub>)</div>
+  <p>How likely an F as large as F<sub>obs</sub> is if H<sub>0</sub> were true. If <b>p &lt; α</b> (usually 0.05): significant; reject H<sub>0</sub> (“Type of coffee has a significant effect on satisfaction”). If <b>p ≥ α</b>: F<sub>obs</sub> isn't unusual under H<sub>0</sub>; <b>fail to reject</b> H<sub>0</sub>. Equivalently, compare F<sub>obs</sub> with the critical value F<sub>.05</sub> (top 5% of the F distribution).</p>
+  <div class="tbl"><table>
+    <tr><th>Decision \ Truth</th><th>H<sub>0</sub> true</th><th>H<sub>0</sub> false</th></tr>
+    <tr><td><b>Reject H<sub>0</sub></b></td><td><b>Type I error</b> (false positive) · prob α</td><td>Correct (true positive) · prob 1 − β = <b>power</b></td></tr>
+    <tr><td><b>Don't reject</b></td><td>Correct (true negative) · prob 1 − α</td><td><b>Type II error</b> (false negative) · prob β</td></tr>
+  </table></div>
+  <p>α (the <b>significance level</b>) is set to 5% or 1% and is <b>fixed first</b>, because a Type I error is considered more serious.</p>
+
+  <h3>Shortcut: running a BSD ANOVA</h3>
+  <ol>
+    <li>Organize the results (Excel etc.).</li>
+    <li>Set independent and dependent variables correctly; set df: effect = k − 1, error = N − k.</li>
+    <li>Run it in a tool (jamovi, SPSS, R, SAS, Minitab…).</li>
+    <li>Report the ANOVA table (F and p), e.g. <span class="mono">F(2, 9) = 50.83, p &lt; .001</span>.</li>
+    <li>If significant, run <b>post-hoc</b> tests to find which groups differ.</li>
+  </ol>
+  <div class="tip"><b>Lecture example</b>A = 50, 52, 48, 51 · B = 55, 53, 57, 56 · C = 62, 60, 63, 61 (BSD, N = 12, k = 3). Means 50.25 / 55.25 / 61.5, grand mean 55.67. SS<sub>B</sub> = 254.17, SS<sub>W</sub> = 22.50, SS<sub>T</sub> = 276.67. MS<sub>B</sub> = 127.08, MS<sub>W</sub> = 2.50, <b>F(2, 9) = 50.83</b> &gt; F<sub>crit</sub> = 4.26 → significant. Walk through it in the <a href="#anova" data-go="anova">ANOVA Lab</a>.</div>
+</article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FLASHCARDS ================= -->
+<section id="v-cards" hidden>
+  <div class="fc-wrap">
+    <div class="row" style="justify-content:space-between">
+      <div class="chips" id="fc-filter"></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="fc-bar"></i></div>
+    <div class="row muted" style="justify-content:space-between;font-size:.88rem">
+      <span id="fc-pos">–</span><span id="fc-known">–</span>
+    </div>
+    <div class="card" id="fc-card" tabindex="0" role="button" aria-label="Flashcard, press to flip">
+      <div class="card-in">
+        <div class="face front"><div class="eyebrow"><span id="fc-lec"></span><span>tap to flip</span></div><div class="term" id="fc-front"></div></div>
+        <div class="face back"><div class="eyebrow"><span>answer</span></div><div class="def" id="fc-back"></div></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn" id="fc-prev">← Prev</button>
+      <button class="btn" id="fc-again">Still learning</button>
+      <button class="btn primary" id="fc-got">Got it ✓</button>
+      <button class="btn" id="fc-next">Next →</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="fc-shuffle">Shuffle</button>
+      <label class="row" style="gap:6px"><input type="checkbox" id="fc-hide"> Hide cards I know</label>
+      <button class="btn" id="fc-reset">Reset progress</button>
+    </div>
+    <p class="muted" style="font-size:.85rem">Keyboard: Space flips, ← → move, K marks known.</p>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section id="v-quiz" hidden>
+  <div class="qwrap">
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <div class="chips" id="q-filter"></div>
+      <div class="row">
+        <span class="muted">Questions:</span>
+        <div class="chips" id="q-count"></div>
+        <button class="btn primary" id="q-start">Start new quiz</button>
+      </div>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="q-bar"></i></div>
+    <div class="panel" id="q-box"></div>
+  </div>
+</section>
+
+<!-- ================= ANOVA ================= -->
+<section id="v-anova" hidden>
+  <div class="lab">
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="panel">
+        <span class="eyebrow">One-way ANOVA · between-subject</span>
+        <h2 style="font-size:1.3rem;margin:4px 0 8px">Calculator</h2>
+        <p class="muted" style="font-size:.9rem">One group per line. A label before a colon is optional.</p>
+        <textarea id="an-in" spellcheck="false" aria-label="Group data">A: 50 52 48 51
+B: 55 53 57 56
+C: 62 60 63 61</textarea>
+        <div class="row" style="margin-top:8px">
+          <label class="row" style="gap:6px">α <select id="an-alpha"><option value="0.05">0.05</option><option value="0.01">0.01</option></select></label>
+          <button class="btn" id="an-example">Load lecture example</button>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="eyebrow">Practice</span>
+        <h2 style="font-size:1.3rem;margin:4px 0 8px">Solve it by hand</h2>
+        <p class="muted" style="font-size:.9rem">Work out each value, then check. Answers within ±0.05 (or 0.5% for big numbers) count.</p>
+        <div class="formula" id="pr-data" style="white-space:pre;line-height:1.7"></div>
+        <div class="prac">
+          <label>df between<input type="number" step="any" id="pr-dfb"></label>
+          <label>df within<input type="number" step="any" id="pr-dfw"></label>
+          <label>SS between<input type="number" step="any" id="pr-ssb"></label>
+          <label>SS within<input type="number" step="any" id="pr-ssw"></label>
+          <label>MS between<input type="number" step="any" id="pr-msb"></label>
+          <label>MS within<input type="number" step="any" id="pr-msw"></label>
+          <label>F<input type="number" step="any" id="pr-f"></label>
+          <label>Significant at .05?<select id="pr-sig"><option value="">choose</option><option value="y">Yes, reject H₀</option><option value="n">No</option></select></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="pr-check">Check</button>
+          <button class="btn" id="pr-show">Show solution</button>
+          <button class="btn" id="pr-new">New problem</button>
+        </div>
+        <p id="pr-msg" class="muted" style="margin-top:8px"></p>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="panel" id="an-out"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ESSAY ================= -->
+<section id="v-essay" hidden>
+  <div class="essay">
+    <p class="muted">Practice the subjective and essay questions. Say or write your answer first, then open the model answer.</p>
+    <div class="row"><button class="btn" id="es-open">Open all</button><button class="btn" id="es-close">Close all</button></div>
+    <div id="es-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+</section>
+</main>
+
+<script>
+const LN={"1":"L1 Intro","2":"L2 Process","3":"L3 Concepts","T":"Textoshop","4":"L4 Cognition","5":"L5 Data","6":"L6 ANOVA"};
+
+const CARDS=[
+["1","HCI (traditional)","Study of methods for developing computer systems that are convenient and easy to use; designing and evaluating systems for ease of use."],
+["1","HAII","Human-AI Interaction (HCI after the 2020s). Systems learn from data, assess situations and act autonomously; the domain (car, finance, health) changes input, output, processing and interaction form."],
+["1","User Interface (UI)","Software/hardware bridging human action and computer action; maps the sensory, cognitive and social human world to computational functions."],
+["1","User Experience (UX)","ISO 9241-210: a user's perceptions and responses resulting from the use and/or anticipated use of a system, product or service — before, during and after use."],
+["1","Usability","Everything that supports achieving the user's goal when using a system; can users accurately accomplish their goal despite complexity?"],
+["1","Interaction design (definition)","Designing interactive products to support the way people communicate and interact in their everyday and working lives."],
+["1","4 things to consider when designing interactive systems","Who will use it · How it will be used · When and where · What activities people are doing while interacting."],
+["1","Key question of interaction design","How do you optimize interactions so they support people's activities in effective, useful, usable and pleasurable ways?"],
+["1","Multidisciplinary teams: + and −","+ more creative ideas, new methods. − cost, difficulty communicating and making progress."],
+["1","People-centered design","Design philosophy that prioritizes the needs and desires of the people who will use a product, including how they feel about it (pleasure, satisfaction)."],
+["1","Accessibility","The extent to which a product is accessible by as many people as possible; focus on people with disabilities."],
+["1","Inclusiveness","Being fair, open and equal to everyone; inclusive design accommodates the widest possible number of people."],
+["1","3 types of impairment","Sensory (vision/hearing) · Physical · Cognitive (e.g. memory, Alzheimer's)."],
+["1","Permanent / temporary / situational","Another way to categorize impairment (e.g. blindness / broken arm / holding a baby)."],
+["1","Disability statistic","Fewer than 20% are born with a disability, but 80% will have one by age 85."],
+["1","DIX","Disability Interactions: cross-disciplinary methods from HCI and disability studies."],
+["1","Usability goals","Effectiveness, Efficiency, Safety, Utility, Learnability, Memorability (+ Satisfaction)."],
+["1","Efficiency vs Effectiveness","Effectiveness: is it good at doing what it should? Efficiency: how many steps does it take to complete a task?"],
+["1","Utility","The product provides the right kind and set of functions so users can do all their tasks."],
+["1","Learnability vs Memorability","Learnability: easy to learn by exploring. Memorability: easy to remember how to use, especially for infrequent tasks."],
+["1","Design principles","Visibility, Feedback, Constraints, Mapping, Consistency, Affordance."],
+["1","Affordance","An attribute that lets people know how to use something (“give it a clue”): a door handle says pull, a plate says push."],
+["1","Constraints","Restricting options to only those appropriate for the situation (e.g. greyed-out menu items)."],
+["1","Mapping","Logical, clear relationship between controls and their effects/real-world counterparts (e.g. arrow-key layout)."],
+["2","Double Diamond phases","Discover → Define → Develop → Deliver. Each diamond: diverge (widely) then converge (focus)."],
+["2","Discover","Understand the problem rather than assume, by talking to the people affected."],
+["2","Deliver","Different solutions are tested at small scale and either rejected or improved."],
+["2","Double Diamond design principles","Focus on people · Communication · Collaboration · Iteration."],
+["2","Stakeholders","Individuals or groups who can influence or be influenced by the success or failure of a project/product."],
+["2","Product owner","Filters user/customer input and prioritizes requirements; downside: limited view, can't predict customer response."],
+["2","Expectation management","Making sure expectations of a new product are realistic, so there are no negative surprises at release."],
+["2","Ownership","Users who were involved and feel they contributed are more likely to support the product's use."],
+["2","Gould & Lewis (1985) principles","1) Early focus on users and tasks 2) Empirical measurement 3) Iterative design."],
+["2","Four basic activities of IxD","Discovering requirements · Designing alternatives · Prototyping · Evaluating."],
+["2","A/B testing","Comparing two versions with different users to choose among alternative designs."],
+["2","Abelein et al. (2013)","User involvement has a positive effect, but large variation means no consistent way to measure it."],
+["3","Assumption","Taking something for granted that requires further investigation."],
+["3","Claim","A statement of what would happen in the future if an action were taken or a product introduced."],
+["3","Conceptual model","A high-level description of how a system is organized and operates (Johnson & Henderson, 2002)."],
+["3","Components of a conceptual model","Metaphors/analogies · Concepts (objects, attributes, operations) · Relationships between concepts · Mappings to the user experience."],
+["3","Interface metaphor","Familiar entities that help people understand the underlying conceptual model (search engine, shopping cart)."],
+["3","3 ways metaphors are used","Conceptualizing what we do (live streaming) · Conceptual model at the interface (cards) · Visualizing an operation (cart icon)."],
+["3","Downside of interface metaphors","They can contravene people's expectations; good visual metaphors are hard to find for many tasks."],
+["3","5 interaction types","Instructing · Conversing · Manipulating · Exploring · Responding."],
+["3","Instructing","Typing commands, selecting options, pressing buttons; quick and efficient for repetitive actions."],
+["3","Manipulating","Using knowledge of the physical world so users feel they directly control digital objects."],
+["3","Responding","The system takes the initiative to alert, describe or show something; the person responds."],
+["T","Textoshop's core idea","Apply the drawing-software (Photoshop) interface metaphor — tools, layers, direct manipulation, Boolean ops — to text editing."],
+["T","Textoshop Boolean ops","Unite (combine) · Intersect (shared ideas only) · Subtract (remove ideas of one from another) · Exclude (drop overlap) · Insert."],
+["T","Tone Eyedropper","Copies the tone from one passage so it can be applied to another."],
+["T","Eraser (Textoshop)","Deletes a selection but keeps the sentence grammatically correct."],
+["T","Textoshop user study","12 participants, Baseline vs Textoshop, 4 tasks, SUS + 5-point difficulty items, free exploration + semi-structured interview."],
+["4","Experiential vs reflective cognition","Experiential: intuitive, effortless perceiving/acting. Reflective: effortful thinking, judgment, decision-making → creativity (Norman, 1993)."],
+["4","Attention depends on…","Whether you have clear goals and whether the needed information is salient."],
+["4","Bowman et al. 2010","Students messaging took up to 50% longer to read a textbook passage."],
+["4","Perception","Acquiring info through the five senses (+ kinesthesia) and turning it into experiences; vision > hearing > touch."],
+["4","Kinesthesia","Awareness of the position and movement of body parts through proprioceptors."],
+["4","Magic number","7 ± 2 chunks in working (short-term) memory."],
+["4","Recognition vs recall","Recognition is easier than recall → use menus, icons, familiar layouts."],
+["4","Incidental vs intentional learning","Incidental: no intent (faces, streets). Intentional: goal-directed (language, driving)."],
+["4","Mental model","Internal constructions of the external world, manipulated to make predictions and inferences (Craik, 1943)."],
+["4","Thermostat example","Setting it to max to warm faster = erroneous mental model (“more is more”)."],
+["4","Gulf of execution","Distance from the user to the physical system: figuring out how to act."],
+["4","Gulf of evaluation","Distance from the physical system back to the user: interpreting what happened."],
+["4","Cognitive load","Mental effort required to learn new information; measured with NASA-TLX."],
+["4","NASA-TLX six items","Mental demand, Physical demand, Temporal demand, Performance, Effort, Frustration."],
+["4","Distributed cognition","Hutchins (1995): people, tools and environment analyzed as one cognitive system (e.g. cockpit); representational state changes."],
+["4","External cognition vs extended mind","External cognition (Scaife & Rogers 1996): tech that boosts cognition, cuts effort. Extended mind (Clark & Chalmers 1998): tech as extension of the mind."],
+["4","Cognitive vs computational offloading","Cognitive: external representation reduces memory load (reminders). Computational: it helps you compute (pen-and-paper math)."],
+["4","Annotating vs cognitive tracing","Annotating: modify representations (cross off, underline). Tracing: reorder/restructure items (sort into piles)."],
+["4","Embodied interaction","Dourish (2001): abstract thinking comes from sensorimotor engagement with the physical/social world."],
+["5","Six key issues of data gathering","Goal setting · Identifying participants · Relationship with participants · Ethics · Triangulation · Pilot studies."],
+["5","Probability vs nonprobability sampling","Probability: random, stratified. Nonprobability: convenience. Difference: whether results generalize."],
+["5","Stratified sampling","Divide the population into groups, then randomly sample within each."],
+["5","4 kinds of triangulation","Data · Investigator · Theories · Methodological. Purpose: reliability."],
+["5","Pilot study","Small trial run to find problems before the main study; pilot participants can't join the main study."],
+["5","Audio vs video","Audio: less intrusive, harder to interpret. Video: high quality, huge storage, privacy issues, hard to decode."],
+["5","Interview types","Unstructured (open-ended) · Structured · Semi-structured · Focus group."],
+["5","Focus group","3–10 people, trained facilitator; diverse views; risk of groupthink or domination."],
+["5","Interview stages","Introduction → Warm-up → Main session → Cooling-off → Closing."],
+["5","Likert scale","Agreement with a statement (1 strongly disagree … 5 strongly agree)."],
+["5","Semantic differential","Bipolar adjective pairs (Useful–Useless); mark a point between."],
+["5","Nominal / Ordinal / Interval / Ratio","Categories · ordered · equal intervals, no true zero · equal intervals with true zero."],
+["5","Tests by scale","Nominal: chi-square. Ordinal: Mann-Whitney U, Kruskal-Wallis. Interval/ratio: t-test, ANOVA (+ correlation, regression for ratio)."],
+["5","Unipolar vs bipolar","Unipolar: 0 → max (amount). Bipolar: negative → positive (direction). Don't mix in one survey."],
+["5","Think-aloud","Participants verbalize thoughts during tasks to reveal cognition; may slightly affect performance."],
+["5","ESM","Experience Sampling Method: random or strategic prompts with immediate capture."],
+["5","Ethnography","Long-form participant observation viewing everything as “strange”; mixes observation, interviews, artifacts."],
+["6","BSD vs WSD","BSD: each participant gets one condition. WSD: each participant gets all conditions."],
+["6","BSD model","X = μ + α_i + ε  (grand mean + treatment effect + error)."],
+["6","WSD model","X = μ + α_i + S_j + ε  (adds the participant effect S_j)."],
+["6","IV / DV / controlled variable","IV: manipulated (coffee type). DV: measured (satisfaction). Controlled: kept constant (temperature, cups)."],
+["6","Why ANOVA instead of t-test?","t-test compares only 2 groups; ANOVA handles k ≥ 3 in one test."],
+["6","ANOVA H0 / HA","H0: no significant difference among group means. HA: at least one mean differs."],
+["6","SST = ?","SSB + SSW (between-group + within-group variability)."],
+["6","df (BSD one-way)","Between k − 1 · Within N − k · Total N − 1."],
+["6","F-value","F = MSB / MSW, where MS = SS / df. Follows F(k − 1, N − k)."],
+["6","Why not SSB / SSW?","SS is distorted by group sizes; divide by df to get variances (MS)."],
+["6","p-value","P(F > F_obs | H0). If p < α → reject H0 (significant)."],
+["6","Type I error","Rejecting H0 when it's true (false positive). Probability α."],
+["6","Type II error","Failing to reject H0 when it's false (false negative). Probability β."],
+["6","Statistical power","1 − β: probability of correctly rejecting a false H0."],
+["6","Significance level","α, set to 5% or 1%; fixed first because Type I error is more serious."],
+["6","After a significant ANOVA","Report F and p (e.g. F(2, 9) = 50.83, p < .001), then run post-hoc tests."]
+];
+
+const QUIZ=[
+{l:"1",q:"Which is the ISO 9241-210 definition of UX?",o:["A user's perceptions and responses resulting from the use and/or anticipated use of a system, product or service","Software/hardware bridging human action and computer action","Everything that supports achieving a user's goal when using a system","The extent to which a product is accessible by as many people as possible"],a:0,e:"UX covers perceptions and responses before, during and after use. The others define UI, usability and accessibility."},
+{l:"1",q:"“How many steps does it take to complete a task?” checks which usability goal?",o:["Efficiency","Effectiveness","Utility","Learnability"],a:0,e:"Efficiency = how the product supports people in carrying out tasks (fewer steps)."},
+{l:"1",q:"“What errors are possible, and how easily can people recover from them?” checks which goal?",o:["Safety","Memorability","Utility","Satisfaction"],a:0,e:"Safety protects people from dangerous and undesirable situations, including recovering from errors."},
+{l:"1",q:"“Can someone work out basic use by exploring the interface and trying actions?” checks which goal?",o:["Learnability","Memorability","Efficiency","Visibility"],a:0,e:"Learnability = how easy it is to learn. Memorability is about remembering how to use it later."},
+{l:"1",q:"“Does the product provide an appropriate set of functions for all their tasks?” checks which goal?",o:["Utility","Effectiveness","Safety","Consistency"],a:0,e:"Utility = the right kind of functionality."},
+{l:"1",q:"A door with a flat metal plate tells you to push. Which design principle?",o:["Affordance","Mapping","Feedback","Constraints"],a:0,e:"Affordance gives a clue about how to use something."},
+{l:"1",q:"Menu items you can't use right now are greyed out. Which principle?",o:["Constraints","Visibility","Consistency","Affordance"],a:0,e:"Constraints restrict options to those appropriate for the situation."},
+{l:"1",q:"A stove whose knobs are laid out in the same arrangement as its burners shows…",o:["Mapping","Feedback","Consistency","Safety"],a:0,e:"Mapping = logical, clear relationship between controls and their real-world counterparts."},
+{l:"1",q:"After you tap Send, a sound plays and a check mark appears. Which principle?",o:["Feedback","Visibility","Affordance","Constraints"],a:0,e:"Feedback informs users about system changes via text, color, sound, etc."},
+{l:"1",q:"Which concept focuses specifically on people with disabilities?",o:["Accessibility","Inclusiveness","Usability","Utility"],a:0,e:"Accessibility focuses on people with disabilities; inclusiveness is about being fair and open to everyone."},
+{l:"1",q:"A person holding a baby in one arm has trouble using a phone. This is a…",o:["Situational impairment","Permanent impairment","Cognitive impairment","Temporary impairment"],a:0,e:"Impairments can be permanent, temporary (broken arm) or situational (context-dependent)."},
+{l:"1",q:"According to the lecture, about what share of people will have a disability by age 85?",o:["80%","20%","50%","7%"],a:0,e:"Fewer than 20% are born with a disability, but 80% will have one by 85."},
+{l:"1",q:"What characterizes HCI after the 2020s?",o:["AI systems that learn from data, assess situations and act autonomously (HAII)","Only designing button placement and colors","Expanding to many users and social networking","Replacing all design principles with AI"],a:0,e:"The 2020s brought AI; validated design principles remain important."},
+{l:"1",q:"A drawback of multidisciplinary design teams is…",o:["Cost and difficulty communicating and making progress","Fewer creative ideas","They can't develop new methods","They ignore people's emotions"],a:0,e:"(+) creative ideas and new methods; (−) cost and communication difficulty."},
+{l:"1",q:"“The button is placed somewhere unexpected.” In the UI–UX relationship, the placement is part of the…",o:["Interface","Interaction","Experience","System/Data"],a:0,e:"Placement = interface; clicking Cancel by mistake = interaction; being annoyed = experience."},
+{l:"1",q:"Which researchers linked UX to people's expectations and how they make sense of experiences?",o:["McCarthy & Wright","Hornbæk & Hertzum","Gould & Lewis","Scaife & Rogers"],a:0,e:"Hornbæk & Hertzum: perception + emotional reaction. Marc et al.: hedonic aspects and well-being."},
+{l:"2",q:"What is the correct order of the Double Diamond phases?",o:["Discover → Define → Develop → Deliver","Define → Discover → Deliver → Develop","Discover → Develop → Define → Deliver","Design → Develop → Deploy → Deliver"],a:0,e:"Discover and Define form the first diamond; Develop and Deliver form the second."},
+{l:"2",q:"In which phase are solutions tested at small scale and rejected or improved?",o:["Deliver","Discover","Define","Develop"],a:0,e:"Develop creates responses; Deliver tests them at small scale."},
+{l:"2",q:"Divergent thinking in the Double Diamond means…",o:["Considering the problem widely","Focusing on a particular response","Testing with users","Writing requirements"],a:0,e:"Divergent = widen; convergent = focus."},
+{l:"2",q:"Which is NOT one of the four Double Diamond design principles?",o:["Automation","Focus on people","Collaboration","Iteration"],a:0,e:"The four are focus on people, communication, collaboration, iteration."},
+{l:"2",q:"Involving users early so the product holds no negative surprises at release is called…",o:["Expectation management","Ownership","Triangulation","Participatory design"],a:0,e:"Users see the product's capabilities early, so expectations stay realistic."},
+{l:"2",q:"Users who contributed to development are more likely to support its use. This is…",o:["Ownership","Expectation management","Affordance","Rapport"],a:0,e:"Feeling of contribution → sense of ownership → support."},
+{l:"2",q:"Which is NOT one of Gould & Lewis's (1985) three principles?",o:["Product-owner prioritization","Early focus on users and tasks","Empirical measurement","Iterative design"],a:0,e:"The three principles are the basis of user-centered design."},
+{l:"2",q:"The four basic activities of interaction design are…",o:["Discovering requirements, designing alternatives, prototyping, evaluating","Discover, define, develop, deliver","Planning, coding, testing, deploying","Interviewing, surveying, observing, logging"],a:0,e:"Don't confuse these with the Double Diamond phases."},
+{l:"2",q:"A/B testing is mainly a way to…",o:["Choose among alternative designs","Find stakeholders","Generate alternatives with SCAMPER","Integrate with other lifecycle models"],a:0,e:"It's listed under “how to choose among alternatives”."},
+{l:"2",q:"What is the main downside of relying on a product owner?",o:["A limited view; can't predict how customers will respond","Too much business knowledge","They involve users too often","They make the project slower"],a:0,e:"That's why potential users should be involved across all stages."},
+{l:"2",q:"Stakeholders are best described as…",o:["People who can influence or be influenced by the project's success or failure","Only the paying customers","Only the end users","The development team"],a:0,e:"Ask who is interested, who has influence/control, and who will be affected."},
+{l:"3",q:"A conceptual model is…",o:["A high-level description of how a system is organized and operates","A detailed UI mockup","A user's internal model of a device","A list of requirements"],a:0,e:"Johnson & Henderson (2002). The user's internal model is a mental model (Lecture 4)."},
+{l:"3",q:"In the spreadsheet conceptual model, “a cell refers to another cell” is a…",o:["Relationship","Concept","Mapping","Metaphor"],a:0,e:"Concepts: cell, formula, reference. Mapping: change a value → related calculations update."},
+{l:"3",q:"“Most people revisit sites through their history, like I do.” This is an…",o:["Assumption","Claim","Requirement","Mapping"],a:0,e:"Taking something for granted that needs investigation. “Bookmarks are no longer needed” is the claim."},
+{l:"3",q:"A shopping-cart icon for items you want to buy uses a metaphor to…",o:["Visualize an operation","Conceptualize what we are doing","Instantiate a conceptual model at the interface level","Replace the conceptual model"],a:0,e:"The three uses: conceptualizing (live streaming), interface-level model (cards), visualizing an operation (cart icon)."},
+{l:"3",q:"A main downside of interface metaphors is that they…",o:["Can contravene people's expectations","Make products too familiar","Are always easy to find","Remove the need for a conceptual model"],a:0,e:"Also, useful visual metaphors are hard to find for many tasks (Alan Cooper)."},
+{l:"3",q:"Pressing buttons on a vending machine is which interaction type?",o:["Instructing","Conversing","Manipulating","Responding"],a:0,e:"Instructing: commands, options, buttons. Quick for repetitive actions."},
+{l:"3",q:"Asking a chatbot for advice and getting replies is…",o:["Conversing","Instructing","Exploring","Manipulating"],a:0,e:"Two-way communication with a system acting as a dialogue partner."},
+{l:"3",q:"Grabbing and rotating a 3D object with VR controllers is…",o:["Manipulating","Exploring","Instructing","Responding"],a:0,e:"Uses physical-world knowledge so users feel in direct control."},
+{l:"3",q:"Walking through a digital twin of a factory is…",o:["Exploring","Manipulating","Conversing","Instructing"],a:0,e:"Moving through virtual or physical environments."},
+{l:"3",q:"A smartwatch alerts you that you've been sitting too long. Which interaction type?",o:["Responding","Instructing","Conversing","Exploring"],a:0,e:"The system takes the initiative; the person responds."},
+{l:"T",q:"Textoshop's interactions are inspired by…",o:["Drawing software like Photoshop","Spreadsheets","Command-line editors","Chatbots only"],a:0,e:"It's an interface metaphor: tools, layers, direct manipulation, Boolean ops."},
+{l:"T",q:"Which Textoshop Boolean operation keeps only the ideas shared by both passages?",o:["Intersect","Unite","Subtract","Exclude"],a:0,e:"Unite combines; Subtract removes one's ideas from the other; Exclude drops the overlap."},
+{l:"T",q:"Textoshop's “Exclude” operation…",o:["Removes overlapping ideas and keeps the non-redundant ones","Combines both passages","Keeps only shared ideas","Moves a passage to a new position"],a:0,e:"Like XOR in shape tools."},
+{l:"T",q:"Which tool copies the tone from one passage?",o:["Tone Eyedropper","Tone Brush","Smudge","Repair"],a:0,e:"Tone Brush applies a tone; Smudge regenerates/smooths; Repair fixes grammar."},
+{l:"T",q:"Which questionnaire did the Textoshop study use for usability?",o:["SUS (System Usability Scale)","NASA-TLX only","Semantic differential only","No questionnaire"],a:0,e:"SUS + 5-point difficulty items, followed by a semi-structured interview."},
+{l:"T",q:"All 12 Textoshop participants rated both Baseline and Textoshop. This is a…",o:["Within-subject design","Between-subject design","Focus group","Ethnography"],a:0,e:"Each participant experienced all conditions."},
+{l:"T",q:"Which is NOT a limitation of current editors that Textoshop targets?",o:["Text can't be saved to disk","Organization is limited by the sheet-of-paper metaphor","Exploring variations is difficult","Managing versions is tedious"],a:0,e:"The four: paper-metaphor organization, exploring variations, reorganizing ideas, managing versions."},
+{l:"4",q:"Which mode of cognition involves mental effort, judgment and decision-making?",o:["Reflective","Experiential","Incidental","Embodied"],a:0,e:"Norman (1993): experiential = effortless; reflective = effortful and creative."},
+{l:"4",q:"How easy attention is depends on…",o:["Clear goals and the salience of the needed information","Only screen size","Memory capacity only","The number of users"],a:0,e:"Two factors from the lecture."},
+{l:"4",q:"Bowman et al. (2010) found students who were messaging…",o:["Took up to 50% longer to read a passage","Read 50% faster","Showed no difference","Remembered more"],a:0,e:"Uncapher & Wagner 2018 found no relationship; Lottridge 2015 said it's more complex."},
+{l:"4",q:"The ‘magic number’ for working memory is…",o:["7 ± 2 chunks","3 ± 1 chunks","12 ± 4 chunks","Unlimited"],a:0,e:"Classic chunking result."},
+{l:"4",q:"Menus and icons are preferred over typed commands partly because…",o:["Recognition is easier than recall","Recall is easier than recognition","Icons reduce perception","Menus increase cognitive load"],a:0,e:"Design implication: support recognition with familiar patterns."},
+{l:"4",q:"Turning the thermostat to maximum to heat a house faster reflects…",o:["An erroneous mental model (“more is more”)","A good conceptual model","Distributed cognition","Computational offloading"],a:0,e:"People apply general abstractions to devices whether or not they fit."},
+{l:"4",q:"The gulf of execution is the distance…",o:["From the user to the physical system","From the system to the user","Between two users","Between designer and developer"],a:0,e:"Execution: how do I make it do what I want? Evaluation: what state is it in?"},
+{l:"4",q:"Which is NOT one of the six NASA-TLX items?",o:["Learnability","Temporal demand","Frustration","Performance"],a:0,e:"Mental, physical, temporal demand, performance, effort, frustration."},
+{l:"4",q:"Analyzing a cockpit's pilots, instruments and environment as one cognitive system is…",o:["Distributed cognition","External cognition","Embodied interaction","The information processing model"],a:0,e:"Hutchins (1995)."},
+{l:"4",q:"Crossing items off a to-do list is an example of…",o:["Annotating","Cognitive tracing","Computational offloading","Incidental learning"],a:0,e:"Annotating modifies an external representation; tracing reorders items."},
+{l:"4",q:"Using pen and paper to do long multiplication is…",o:["Computational offloading","Cognitive offloading","Annotating","Mental modeling"],a:0,e:"An external representation helps carry out a computation."},
+{l:"4",q:"Who proposed the ‘extended mind’?",o:["Clark & Chalmers (1998)","Scaife & Rogers (1996)","Hutchins (1995)","Dourish (2001)"],a:0,e:"Scaife & Rogers: external cognition. Dourish: embodied interaction."},
+{l:"4",q:"Which framework is described as ‘not used nowadays’?",o:["Information processing model","Distributed cognition","External cognition","Embodied interaction"],a:0,e:"The 1980s metaphor of the mind as an information processor."},
+{l:"4",q:"Learning a friend's face without trying is…",o:["Incidental learning","Intentional learning","Reflective cognition","Cognitive tracing"],a:0,e:"Intentional learning is goal-directed (languages, driving)."},
+{l:"5",q:"Dividing students by class and randomly sampling within each class is…",o:["Stratified sampling","Random sampling","Convenience sampling","Snowball sampling"],a:0,e:"A probability sampling method."},
+{l:"5",q:"The key difference between probability and nonprobability sampling is…",o:["Whether results can be generalized","Cost only","The number of questions","Whether consent is needed"],a:0,e:"Convenience samples limit generalization."},
+{l:"5",q:"Two researchers collect and interpret the same data independently. This is…",o:["Investigator triangulation","Data triangulation","Methodological triangulation","Triangulation of theories"],a:0,e:"Methodological = different techniques; data = different sources/times/places/people."},
+{l:"5",q:"Combining interviews, questionnaires and logs is…",o:["Methodological triangulation","Investigator triangulation","A pilot study","Data capture"],a:0,e:"Triangulation improves reliability."},
+{l:"5",q:"Which is true about pilot studies?",o:["Pilot participants cannot take part in the main study","They must be larger than the main study","They replace the main study","They need no participants"],a:0,e:"A small trial run to find and fix problems."},
+{l:"5",q:"Compared with video, audio recording is…",o:["Less intrusive but harder to interpret","More intrusive","Higher quality","Always mandatory"],a:0,e:"Video: high quality, huge storage, privacy issues."},
+{l:"5",q:"Giving participants too much information about the study's purpose risks…",o:["Bias","Ethical violation","Lower sample size","Triangulation"],a:0,e:"Hidden or false information is the ethical problem."},
+{l:"5",q:"Same predetermined, closed questions in the same order for every participant:",o:["Structured interview","Unstructured interview","Semi-structured interview","Focus group"],a:0,e:"Useful when goals are clear and time is limited."},
+{l:"5",q:"A focus group typically has…",o:["3–10 participants and a trained facilitator","1 participant","50+ participants","No facilitator"],a:0,e:"Risks: groupthink, domination by a few voices."},
+{l:"5",q:"Correct order of an interview:",o:["Introduction → Warm-up → Main → Cooling-off → Closing","Warm-up → Introduction → Main → Closing","Main → Warm-up → Cooling-off → Closing","Introduction → Main → Warm-up → Closing"],a:0,e:"Warm-up uses simple, non-threatening questions."},
+{l:"5",q:"Which age ranges are well designed?",o:["15–19, 20–24, 25–29","15–20, 20–25, 25–30","15–25, 20–30","Any order is fine"],a:0,e:"Ranges must not overlap."},
+{l:"5",q:"Which online control lets respondents pick multiple answers?",o:["Check boxes","Radio buttons","A single drop-down","A Likert item"],a:0,e:"Radio buttons = one choice."},
+{l:"5",q:"“Useful ——— Useless” with points in between is a…",o:["Semantic differential scale","Likert scale","Ratio scale","Ranking question"],a:0,e:"Bipolar adjective pairs."},
+{l:"5",q:"Task completion time in seconds is on which scale?",o:["Ratio","Interval","Ordinal","Nominal"],a:0,e:"Equal intervals and a true zero."},
+{l:"5",q:"Temperature in °C is on which scale?",o:["Interval","Ratio","Ordinal","Nominal"],a:0,e:"Equal intervals but no true zero."},
+{l:"5",q:"A single Likert item (1–5) is on which scale?",o:["Ordinal","Nominal","Ratio","Interval"],a:0,e:"Ordered, but distances aren't guaranteed equal → median."},
+{l:"5",q:"Which test fits nominal data?",o:["Chi-square","t-test","ANOVA","Regression"],a:0,e:"Ordinal → Mann-Whitney U / Kruskal-Wallis; interval/ratio → t-test, ANOVA."},
+{l:"5",q:"SUS and NASA-TLX scores are usually treated as…",o:["Interval","Nominal","Ordinal only","Ratio"],a:0,e:"Psychometric scores → often treated as interval."},
+{l:"5",q:"“How likely are you to recommend this app?” (Not at all → Extremely) is…",o:["Unipolar","Bipolar","Nominal","Semantic differential"],a:0,e:"Measures amount/intensity from zero. Don't mix unipolar and bipolar in one survey."},
+{l:"5",q:"Asking participants to say what they're thinking while doing a task is…",o:["Think-aloud","ESM","Ethnography","A diary study"],a:0,e:"Reveals cognition; more feasible in a lab; may slightly affect performance."},
+{l:"5",q:"Prompting participants at random times to record what they're doing right now is…",o:["Experience sampling (ESM)","A diary","Interaction logging","Think-aloud"],a:0,e:"Diaries suffer from memory and compliance issues."},
+{l:"5",q:"Which observer role gives richer insight but makes objectivity harder?",o:["Participant observer","Passive observer","Indirect observer","Lab observer"],a:0,e:"Participant = insider; passive = outsider."},
+{l:"6",q:"In a between-subject design, each participant…",o:["Experiences only one condition","Experiences all conditions","Experiences two conditions","Chooses their condition"],a:0,e:"WSD: each participant experiences all conditions."},
+{l:"6",q:"Which term appears in the WSD model but not the BSD model?",o:["S_j (participant effect)","μ (grand mean)","α_i (treatment effect)","ε (error)"],a:0,e:"BSD: μ + α_i + ε. WSD: μ + α_i + S_j + ε."},
+{l:"6",q:"In the coffee study, the satisfaction score is the…",o:["Dependent variable","Independent variable","Controlled variable","Participant effect"],a:0,e:"Coffee type = IV; temperature/cups = controlled."},
+{l:"6",q:"Why use ANOVA instead of a t-test for 3 coffees?",o:["A t-test compares only two groups","ANOVA needs fewer participants","t-tests need nominal data","ANOVA has no assumptions"],a:0,e:"ANOVA is a unified method for k ≥ 3."},
+{l:"6",q:"What does the ANOVA null hypothesis state?",o:["There is no significant difference among the group means","All groups differ","At least one mean differs","The variances differ"],a:0,e:"HA: at least one mean differs."},
+{l:"6",q:"Between-group variability measures…",o:["How far each group mean is from the grand mean","How far each observation is from its group mean","How far each observation is from the grand mean","The participant effect"],a:0,e:"Within-group = each observation vs its own group mean."},
+{l:"6",q:"With k = 3 groups and N = 12 observations, the df are…",o:["Between 2, within 9, total 11","Between 3, within 12, total 15","Between 2, within 10, total 12","Between 11, within 2, total 13"],a:0,e:"k − 1 = 2; N − k = 9; N − 1 = 11."},
+{l:"6",q:"Why can't we just compare SSB with SSW?",o:["SS values are distorted by group sizes, so we divide by df","SSB is always larger","SSW is always zero","They use different units"],a:0,e:"Mean squares (variances) fix this: MS = SS / df."},
+{l:"6",q:"The F-value is…",o:["MSB / MSW","SSB / SSW","MSW / MSB","SST / N"],a:0,e:"Between-group variance over within-group variance."},
+{l:"6",q:"A large F-value suggests…",o:["Between-group variance is large relative to within-group variance","The groups are identical","The sample is too small","A Type II error"],a:0,e:"→ more likely to reject H0."},
+{l:"6",q:"A Type I error is…",o:["Rejecting H0 when it is actually true (false positive)","Failing to reject a false H0","Correctly rejecting H0","Correctly keeping H0"],a:0,e:"Its probability is α, the significance level."},
+{l:"6",q:"Statistical power is…",o:["1 − β","α","β","1 − α"],a:0,e:"Probability of correctly rejecting a false H0."},
+{l:"6",q:"Why is α fixed first?",o:["A Type I error is considered more serious","β is always zero","It makes F larger","It's required by SPSS"],a:0,e:"α is usually 5% or 1%."},
+{l:"6",q:"ANOVA gives p = 0.03 with α = 0.05. You should…",o:["Reject H0: the effect is significant","Fail to reject H0","Accept HA with certainty","Collect more data before deciding"],a:0,e:"p < α → significant. Then report F and p and run post-hoc tests."},
+{l:"6",q:"ANOVA gives p = 0.21 with α = 0.05. You conclude…",o:["Not enough evidence of an effect (fail to reject H0)","The groups are proven equal","A significant effect","A Type I error occurred"],a:0,e:"Failing to reject isn't proving H0 true."},
+{l:"6",q:"p = P(F > F_obs | H0) means…",o:["How likely an F at least this large is if there were truly no difference","The probability that H0 is true","The probability of a Type II error","The effect size"],a:0,e:"Small p → F_obs would be unusual under H0."},
+{l:"6",q:"Which is an ANOVA assumption from the lecture?",o:["Errors are normally distributed, ε ~ N(0, σ²)","Data are nominal","Groups must have different variances","N must be over 100"],a:0,e:"The model assumes normal errors with common variance σ²."},
+{l:"6",q:"In the lecture example (k = 3, N = 12), MSB = 127.08 and MSW = 2.5. F = ?",o:["50.83","4.26","254.17","0.02"],a:0,e:"127.08 / 2.5 = 50.83 > F_crit(2, 9) = 4.26 → significant."},
+{l:"6",q:"SST = 276.67 and SSB = 254.17. SSW = ?",o:["22.50","530.84","1.09","254.17"],a:0,e:"SST = SSB + SSW."},
+{l:"6",q:"A significant one-way ANOVA tells you…",o:["At least one group mean differs, not which one","Exactly which groups differ","That all groups differ","Which group is best"],a:0,e:"Post-hoc tests identify which pairs differ."}
+];
+
+const ESSAYS=[
+{l:"1",q:"Define UI and UX and explain how they relate, with an example.",a:"<ul><li><b>UI</b>: software/hardware bridging human action and computer action; maps human sensory, cognitive and social world to computational functions.</li><li><b>UX</b> (ISO 9241-210): a user's perceptions and responses from the use and/or anticipated use of a product — emotions, beliefs, preferences, comfort, behaviors, accomplishments before, during and after use.</li><li><b>Relationship</b>: User ↔ Experience ↔ Interaction ↔ Interface ↔ System. The interface shapes the interaction, which produces the experience.</li><li><b>Example</b>: a Cancel button in an unexpected spot (interface) → I click it by mistake (interaction) → I'm annoyed and lose time (experience).</li></ul>"},
+{l:"1",q:"Explain the six design principles with an example of each.",a:"<ul><li><b>Visibility</b>: show what to do next (visible controls).</li><li><b>Feedback</b>: report system changes (click sound, progress bar).</li><li><b>Constraints</b>: allow only appropriate options (greyed-out items).</li><li><b>Mapping</b>: clear relation to real-world counterparts (arrow keys, stove knobs).</li><li><b>Consistency</b>: similar operations for similar tasks (same shortcuts everywhere).</li><li><b>Affordance</b>: a clue to how it's used (push plate vs pull handle).</li></ul>"},
+{l:"1",q:"Pick a product (e.g. a smart TV remote). Evaluate it with the usability goals.",a:"<p>Ask one question per goal:</p><ul><li><b>Effectiveness</b>: can users find and play what they want?</li><li><b>Efficiency</b>: how many presses to reach a show?</li><li><b>Safety</b>: can you recover from pressing the wrong button (back/undo)?</li><li><b>Utility</b>: are the needed functions there (search, volume, input)?</li><li><b>Learnability</b>: can a first-time user figure it out by exploring?</li><li><b>Memorability</b>: can they remember rarely used functions (subtitles)?</li><li><b>Satisfaction</b>: CSAT ratings.</li></ul>"},
+{l:"1",q:"Compare accessibility and inclusiveness. How can each be achieved?",a:"<ul><li><b>Accessibility</b>: extent to which a product is accessible by as many as possible; focus on people with disabilities.</li><li><b>Inclusiveness</b>: fair, open and equal to everyone; inclusive design accommodates the widest number.</li><li>Achieved through <b>inclusive design</b> and <b>assistive technology</b>.</li><li>First understand impairment types: sensory, physical, cognitive; permanent, temporary, situational. &lt;20% born with a disability, 80% by 85, so it affects almost everyone eventually.</li></ul>"},
+{l:"2",q:"Describe the Double Diamond and explain divergent vs convergent thinking.",a:"<ul><li>Four phases in two diamonds: <b>Discover</b> (understand the problem by talking to affected people), <b>Define</b> (frame the design challenge from those insights), <b>Develop</b> (create many responses: competitors, insights, brainstorming), <b>Deliver</b> (test at small scale; reject or improve).</li><li>Each diamond first <b>diverges</b> (consider the problem widely) then <b>converges</b> (focus on a particular response).</li><li>Not linear; iterated. Supported by design principles (people, communication, collaboration, iteration), a methods bank, and engagement + leadership.</li></ul>"},
+{l:"2",q:"Why should users be involved in development? Mention Gould & Lewis.",a:"<ul><li><b>Expectation management</b>: users see capabilities early, so expectations are realistic and there are no surprises at release.</li><li><b>Ownership</b>: users who contribute feel ownership and support its use.</li><li>A product owner alone has a limited view and can't predict customer reactions.</li><li><b>Gould & Lewis (1985)</b>: early focus on users and tasks; empirical measurement; iterative design → basis of user-centered design.</li><li>Caveat: Abelein et al. (2013) — positive effect, but large variation; the key is knowing who, when, where and how.</li></ul>"},
+{l:"3",q:"What is a conceptual model? Describe its components using the desktop or spreadsheet.",a:"<ul><li>A high-level description of how a system is organized and operates (Johnson & Henderson, 2002).</li><li><b>Metaphors/analogies</b>: desktop, folders, trash.</li><li><b>Concepts</b>: objects, attributes, operations (file, folder; cell, formula, reference).</li><li><b>Relationships</b>: a folder contains files; a cell references another cell.</li><li><b>Mappings</b> to UX: like real office documents; change a value and all related calculations update.</li><li>Best models are obvious and simple, and serve as a shared blueprint.</li></ul>"},
+{l:"3",q:"Explain the five interaction types and choose the best for a smart home app.",a:"<ul><li><b>Instructing</b>: commands/buttons; fast for repetitive actions.</li><li><b>Conversing</b>: dialogue with the system (voice assistant).</li><li><b>Manipulating</b>: direct control using physical-world knowledge (drag a dimmer slider).</li><li><b>Exploring</b>: moving through a virtual/physical space (3D floor plan).</li><li><b>Responding</b>: system takes initiative (alert: door left open).</li><li>A good answer justifies a mix, e.g. instructing for routine on/off, conversing for hands-free control, responding for safety alerts.</li></ul>"},
+{l:"T",q:"How does Textoshop use an interface metaphor to solve problems in text editing?",a:"<ul><li>Problem: editors rely on the sheet-of-paper metaphor; exploring variations, reorganizing ideas and managing versions are tedious.</li><li>Borrows the <b>drawing-software metaphor</b>: tools (Tone Brush, Eyedropper, Smudge, Eraser, Repair, tense/number changers, Prompt), Tone Picker (color wheel + formal/positive/simple sliders), <b>Boolean ops</b> (unite, intersect, subtract, exclude), <b>layers</b>, and <b>direct manipulation</b> (resize to shorten/expand, rotate to rephrase).</li><li>Familiar entities from Photoshop help users understand the new model quickly.</li><li>Study: 12 participants, Baseline vs Textoshop, 4 tasks, SUS + difficulty ratings + interview; Textoshop rated easier on every item.</li></ul>"},
+{l:"4",q:"Explain mental models and the gulfs of execution and evaluation. How can design help?",a:"<ul><li><b>Mental model</b>: internal construction of the world used to predict and infer (Craik 1943). Often incomplete or wrong: thermostat to max (“more is more”).</li><li><b>Gulf of execution</b>: user → system (knowing how to act). <b>Gulf of evaluation</b>: system → user (understanding the result).</li><li>Design bridges the gulfs: visibility, affordances and clear mappings for execution; feedback and clear state display for evaluation. This also helps users form better mental models.</li></ul>"},
+{l:"4",q:"Describe the forms of external cognition with examples.",a:"<ul><li><b>Cognitive offloading</b>: external representations reduce memory load (birthday reminders, to-do lists).</li><li><b>Computational offloading</b>: representations help computation (pen-and-paper multiplication).</li><li><b>Annotating</b>: modifying representations (crossing off, underlining).</li><li><b>Cognitive tracing</b>: reordering or restructuring (sorting into piles).</li><li>External cognition (Scaife & Rogers 1996) vs extended mind (Clark & Chalmers 1998).</li></ul>"},
+{l:"4",q:"Give design implications for attention, perception and memory.",a:"<ul><li><b>Attention</b>: make important info salient (color, animation, ordering, spacing); avoid clutter; support switching and returning.</li><li><b>Perception</b>: distinguishable icons; white space to group; distinct sounds; enough color contrast (color-vision deficiency); sparing, distinct haptics.</li><li><b>Memory</b>: keep tasks short; recognition over recall (menus, icons, consistent layouts); labels, tags, folders, colors.</li></ul>"},
+{l:"5",q:"You built an alarm app. Plan the data gathering using the six key issues.",a:"<ul><li><b>Goal</b>: e.g. do users wake on time and find setting alarms easy?</li><li><b>Participants</b>: random/stratified sampling to generalize, or convenience if limited (state the limitation).</li><li><b>Relationship</b>: informed consent, rapport, incentive.</li><li><b>Ethics</b>: store data securely; don't reveal so much that it biases; don't hide or falsify.</li><li><b>Triangulation</b>: e.g. logs + questionnaire + interview (methodological).</li><li><b>Pilot</b>: small trial first; pilot people excluded from the main study.</li></ul>"},
+{l:"5",q:"Design a short questionnaire. What should you watch out for?",a:"<ul><li>Start with demographics, then goal-related questions grouped by topic; order can influence answers.</li><li>Closed questions with “none/no opinion”; radio for one choice, check boxes for many.</li><li>Non-overlapping ranges (18–25, 26–35…).</li><li>Likert (agreement) or semantic differential (bipolar adjectives); mix positive/negative wording.</li><li>Don't mix unipolar and bipolar scales; keep it concise; clear instructions.</li><li>Know the measurement level for analysis: Likert item → ordinal (median, Mann-Whitney/Kruskal-Wallis).</li></ul>"},
+{l:"6",q:"Compare BSD and WSD for testing three coffees. Write each model.",a:"<ul><li><b>BSD</b>: each person tastes one coffee. X = μ + α<sub>i</sub> + ε. Individual differences end up in the error.</li><li><b>WSD</b>: each person tastes all three. X = μ + α<sub>i</sub> + S<sub>j</sub> + ε. The participant effect S<sub>j</sub> (“P1 just likes coffee”) is separated out.</li><li>BSD needs more people but avoids order/carry-over effects; WSD needs fewer people but needs counterbalancing.</li><li>IV = coffee type, DV = satisfaction, controlled = temperature, cup, time.</li></ul>"},
+{l:"6",q:"Explain the logic of the one-way ANOVA F-test, the p-value and Type I/II errors.",a:"<ul><li>H0: no difference among group means. SST = SSB + SSW.</li><li>Divide by df to get variances: MSB = SSB/(k−1), MSW = SSW/(N−k). <b>F = MSB/MSW</b> ~ F(k−1, N−k).</li><li>Large F → groups differ more than noise would explain.</li><li><b>p = P(F > F<sub>obs</sub> | H0)</b>. If p &lt; α (0.05) → reject H0 → significant; report F, p; do post-hoc.</li><li>Type I: reject a true H0 (prob α). Type II: miss a real effect (prob β). Power = 1 − β. α is fixed first because Type I is more serious.</li></ul>"},
+{l:"6",q:"Calculate: A = 50, 52, 48, 51 · B = 55, 53, 57, 56 · C = 62, 60, 63, 61 (BSD).",a:"<ul><li>Means 50.25, 55.25, 61.5; grand mean 55.67; k = 3, N = 12.</li><li>SSB = 4[(50.25−55.67)² + (55.25−55.67)² + (61.5−55.67)²] = <b>254.17</b></li><li>SSW = 8.75 + 8.75 + 5.00 = <b>22.50</b>; SST = 276.67</li><li>df = 2 and 9 → MSB = 127.08, MSW = 2.50</li><li><b>F(2, 9) = 50.83</b> &gt; F<sub>.05</sub> = 4.26 (p &lt; .001) → reject H0: coffee type has a significant effect on satisfaction.</li></ul>"}
+];
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem("hcik-"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("hcik-"+k,JSON.stringify(v))}catch(e){}}};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+/* ---------- tabs ---------- */
+const VIEWS=["notes","cards","quiz","anova","essay"];
+function show(v){
+  if(!VIEWS.includes(v)) v="notes";
+  VIEWS.forEach(x=>{$("#v-"+x).hidden=x!==v;$("#t-"+x).setAttribute("aria-selected",x===v)});
+  store.set("tab",v);
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{show(b.dataset.v);window.scrollTo(0,0)}));
+document.querySelectorAll("[data-go]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();show(a.dataset.go);window.scrollTo(0,0)}));
+const h=(location.hash||"").slice(1);
+show(VIEWS.includes(h)?h:(h?"notes":store.get("tab","notes")));
+
+/* ---------- countdown ---------- */
+const EXAM=Date.UTC(2026,9,21,6,0,0); // Wed Oct 21, 3:00 PM KST
+function tick(){
+  const d=EXAM-Date.now(), el=$("#countdown");
+  if(d<=0){el.innerHTML="Exam day: <b>Wed Oct 21, 3 PM</b>";return}
+  const days=Math.floor(d/864e5),hrs=Math.floor(d/36e5)%24,min=Math.floor(d/6e4)%60;
+  el.innerHTML="Exam in <b>"+(days?days+"d ":"")+hrs+"h "+min+"m</b> · Wed Oct 21, 3 PM";
+}
+tick();setInterval(tick,30000);
+
+/* ---------- chips ---------- */
+function chips(el,items,cur,onPick){
+  el.innerHTML="";
+  items.forEach(([v,label])=>{
+    const b=document.createElement("button");b.className="chip";b.textContent=label;b.setAttribute("aria-pressed",String(v)===String(cur));
+    b.addEventListener("click",()=>{el.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));b.setAttribute("aria-pressed","true");onPick(v)});
+    el.appendChild(b);
+  });
+}
+const LEC_ITEMS=[["all","All"]].concat(Object.keys(LN).map(k=>[k,LN[k]]));
+
+/* ---------- flashcards ---------- */
+const CARDOBJ=CARDS.map(([l,f,b],i)=>({l,f,b,i}));
+let known=new Set(store.get("known",[])),deck=[],di=0,cf="all",hideKnown=false;
+function buildDeck(shuf){
+  deck=CARDOBJ.filter(c=>(cf==="all"||c.l===cf)&&(!hideKnown||!known.has(c.i)));
+  if(shuf) deck=shuffle(deck);
+  di=0;renderCard();
+}
+function renderCard(){
+  const card=$("#fc-card");card.classList.remove("flip");
+  const inSet=CARDOBJ.filter(c=>cf==="all"||c.l===cf),kn=inSet.filter(c=>known.has(c.i)).length;
+  $("#fc-known").textContent=kn+" of "+inSet.length+" known";
+  $("#fc-bar").style.width=(inSet.length?kn/inSet.length*100:0)+"%";
+  if(!deck.length){$("#fc-lec").textContent="";$("#fc-front").textContent="You know every card in this set.";$("#fc-back").textContent="Untick “Hide cards I know” or reset progress to review again.";$("#fc-pos").textContent="0 / 0";return}
+  if(di>=deck.length) di=0; if(di<0) di=deck.length-1;
+  const c=deck[di];
+  $("#fc-lec").textContent=LN[c.l]+(known.has(c.i)?" · known":"");
+  $("#fc-front").textContent=c.f;$("#fc-back").textContent=c.b;
+  $("#fc-pos").textContent="Card "+(di+1)+" / "+deck.length;
+}
+function flip(){$("#fc-card").classList.toggle("flip")}
+function markKnown(){
+  if(!deck.length) return;
+  known.add(deck[di].i);store.set("known",[...known]);
+  if(hideKnown){deck.splice(di,1);renderCard()}else{di++;renderCard()}
+}
+chips($("#fc-filter"),LEC_ITEMS,"all",v=>{cf=v;buildDeck(false)});
+$("#fc-card").addEventListener("click",flip);
+$("#fc-card").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();flip()}});
+$("#fc-prev").onclick=()=>{di--;renderCard()};
+$("#fc-next").onclick=()=>{di++;renderCard()};
+$("#fc-again").onclick=()=>{if(deck.length){known.delete(deck[di].i);store.set("known",[...known])}di++;renderCard()};
+$("#fc-got").onclick=markKnown;
+$("#fc-shuffle").onclick=()=>buildDeck(true);
+$("#fc-hide").onchange=e=>{hideKnown=e.target.checked;buildDeck(false)};
+$("#fc-reset").onclick=()=>{known=new Set();store.set("known",[]);buildDeck(false)};
+document.addEventListener("keydown",e=>{
+  if($("#v-cards").hidden||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  if(e.key===" "){e.preventDefault();flip()}
+  else if(e.key==="ArrowRight"){di++;renderCard()}
+  else if(e.key==="ArrowLeft"){di--;renderCard()}
+  else if(e.key==="k"||e.key==="K"){markKnown()}
+});
+buildDeck(false);
+
+/* ---------- quiz ---------- */
+let qf="all",qn=10,qset=[],qi=0,qscore=0,qmissed=[];
+chips($("#q-filter"),LEC_ITEMS,"all",v=>{qf=v});
+chips($("#q-count"),[[10,"10"],[20,"20"],["all","All"]],10,v=>{qn=v});
+function startQuiz(list){
+  const pool=QUIZ.filter(q=>qf==="all"||q.l===qf);
+  qset=list||shuffle(pool).slice(0,qn==="all"?pool.length:qn);
+  qi=0;qscore=0;qmissed=[];renderQ();
+}
+function renderQ(){
+  const box=$("#q-box");
+  $("#q-bar").style.width=(qset.length?qi/qset.length*100:0)+"%";
+  if(qi>=qset.length) return endQuiz();
+  const q=qset[qi],opts=shuffle(q.o.map((t,k)=>({t,ok:k===q.a})));
+  box.innerHTML='<div class="eyebrow">'+LN[q.l]+' · Question '+(qi+1)+' of '+qset.length+' · Score '+qscore+'</div><div class="qtext" style="margin-top:6px">'+esc(q.q)+'</div><div class="opts"></div><div id="q-after"></div>';
+  const wrap=box.querySelector(".opts");
+  opts.forEach(o=>{
+    const b=document.createElement("button");b.className="opt";b.textContent=o.t;
+    b.onclick=()=>{
+      wrap.querySelectorAll(".opt").forEach((x,k)=>{x.disabled=true;if(opts[k].ok)x.classList.add("right")});
+      if(o.ok) qscore++; else {b.classList.add("wrong");qmissed.push(q)}
+      $("#q-after").innerHTML='<div class="expl"><span class="'+(o.ok?"verdict-ok":"verdict-no")+'">'+(o.ok?"Correct.":"Not quite.")+'</span> '+esc(q.e)+'</div><div class="row" style="margin-top:12px"><button class="btn primary" id="q-next">'+(qi+1<qset.length?"Next question →":"See results")+'</button></div>';
+      $("#q-next").onclick=()=>{qi++;renderQ()};$("#q-next").focus();
+    };
+    wrap.appendChild(b);
+  });
+}
+function endQuiz(){
+  const pct=Math.round(qscore/qset.length*100),key="best-"+qf,best=Math.max(store.get(key,0),pct);store.set(key,best);
+  let html='<div class="eyebrow">Results · '+(qf==="all"?"All lectures":LN[qf])+'</div><div class="row" style="align-items:baseline;gap:14px;margin:8px 0"><span class="score">'+qscore+' / '+qset.length+'</span><span class="muted">'+pct+'% · best '+best+'%</span></div>';
+  if(qmissed.length){
+    html+='<h3>Review what you missed</h3><ol class="missed">'+qmissed.map(q=>'<li><b>'+esc(q.q)+'</b><br>Answer: '+esc(q.o[q.a])+'<br><span class="muted">'+esc(q.e)+'</span></li>').join("")+'</ol>';
+  } else html+='<p>Perfect score.</p>';
+  html+='<div class="row" style="margin-top:12px">'+(qmissed.length?'<button class="btn primary" id="q-retry">Retry missed ('+qmissed.length+')</button>':'')+'<button class="btn" id="q-again">New quiz</button></div>';
+  $("#q-box").innerHTML=html;
+  if(qmissed.length){const m=qmissed.slice();$("#q-retry").onclick=()=>startQuiz(shuffle(m))}
+  $("#q-again").onclick=()=>startQuiz();
+}
+$("#q-start").onclick=()=>startQuiz();
+startQuiz();
+
+/* ---------- stats ---------- */
+function lgamma(x){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];let y=x,t=x+5.5;t-=(x+0.5)*Math.log(t);let s=1.000000000190015;for(const ci of c)s+=ci/++y;return -t+Math.log(2.5066282746310005*s/x)}
+function betacf(a,b,x){const FP=1e-300;let qab=a+b,qap=a+1,qam=a-1,c=1,d=1-qab*x/qap;if(Math.abs(d)<FP)d=FP;d=1/d;let h=d;for(let m=1;m<=300;m++){const m2=2*m;let aa=m*(b-m)*x/((qam+m2)*(a+m2));d=1+aa*d;if(Math.abs(d)<FP)d=FP;c=1+aa/c;if(Math.abs(c)<FP)c=FP;d=1/d;h*=d*c;aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));d=1+aa*d;if(Math.abs(d)<FP)d=FP;c=1+aa/c;if(Math.abs(c)<FP)c=FP;d=1/d;const del=d*c;h*=del;if(Math.abs(del-1)<3e-14)break}return h}
+function ibeta(x,a,b){if(x<=0)return 0;if(x>=1)return 1;const bt=Math.exp(lgamma(a+b)-lgamma(a)-lgamma(b)+a*Math.log(x)+b*Math.log(1-x));return x<(a+1)/(a+b+2)?bt*betacf(a,b,x)/a:1-bt*betacf(b,a,1-x)/b}
+function fP(F,d1,d2){return F>0?ibeta(d2/(d2+d1*F),d2/2,d1/2):1}
+function fCrit(al,d1,d2){let lo=0,hi=1;while(fP(hi,d1,d2)>al)hi*=2;for(let i=0;i<80;i++){const m=(lo+hi)/2;if(fP(m,d1,d2)>al)lo=m;else hi=m}return (lo+hi)/2}
+function fPdf(x,d1,d2){if(x<=0)return 0;const lb=lgamma(d1/2)+lgamma(d2/2)-lgamma((d1+d2)/2);return Math.exp((d1/2)*Math.log(d1*x/(d1*x+d2))+(d2/2)*Math.log(d2/(d1*x+d2))-Math.log(x)-lb)}
+const mean=a=>a.reduce((s,x)=>s+x,0)/a.length, sum=a=>a.reduce((s,x)=>s+x,0);
+const f2=x=>(Math.round(x*100)/100).toFixed(2);
+const fp=p=>p<0.001?"&lt; .001":p.toFixed(3).replace(/^0/,"");
+
+function anova(groups){
+  const all=groups.flatMap(g=>g.v),N=all.length,k=groups.length,gm=mean(all);
+  groups.forEach(g=>{g.n=g.v.length;g.m=mean(g.v)});
+  const SSB=sum(groups.map(g=>g.n*(g.m-gm)**2)),SSW=sum(groups.map(g=>sum(g.v.map(x=>(x-g.m)**2)))),SST=sum(all.map(x=>(x-gm)**2));
+  const d1=k-1,d2=N-k,MSB=SSB/d1,MSW=SSW/d2,F=MSB/MSW;
+  return {groups,N,k,gm,SSB,SSW,SST,d1,d2,MSB,MSW,F,p:fP(F,d1,d2)};
+}
+function parseGroups(txt){
+  return txt.split("\n").map(s=>s.trim()).filter(Boolean).map((line,i)=>{
+    let name=String.fromCharCode(65+i),rest=line;const m=line.match(/^([^:]+):(.*)$/);
+    if(m){name=m[1].trim();rest=m[2]}
+    return {name,v:(rest.match(/-?\d*\.?\d+/g)||[]).map(Number)};
+  }).filter(g=>g.v.length);
+}
+function plot(r,al,crit){
+  const W=520,H=190,L=34,R=14,T=14,B=30,xmax=Math.max(crit*2.2,5),pw=W-L-R,ph=H-T-B;
+  const pts=[];let ymax=0;for(let i=1;i<=160;i++){const x=xmax*i/160,y=fPdf(x,r.d1,r.d2);pts.push([x,y]);if(isFinite(y))ymax=Math.max(ymax,y)}
+  ymax=Math.min(ymax,1.5)*1.08||1;
+  const X=x=>L+x/xmax*pw,Y=y=>T+ph-Math.min(y,ymax)/ymax*ph;
+  const line=pts.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join("");
+  const tail=pts.filter(p=>p[0]>=crit);
+  const area=tail.length?"M"+X(crit).toFixed(1)+","+Y(0)+tail.map(p=>"L"+X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join("")+"L"+X(xmax)+","+Y(0)+"Z":"";
+  let ticks="";const step=xmax>12?4:xmax>6?2:1;for(let t=0;t<=xmax;t+=step)ticks+='<line x1="'+X(t)+'" x2="'+X(t)+'" y1="'+Y(0)+'" y2="'+(Y(0)+4)+'" stroke="var(--muted)"/><text x="'+X(t)+'" y="'+(Y(0)+16)+'" text-anchor="middle">'+t+'</text>';
+  const obs=r.F<=xmax?'<line x1="'+X(r.F)+'" x2="'+X(r.F)+'" y1="'+T+'" y2="'+Y(0)+'" stroke="var(--accent)" stroke-width="2"/><text x="'+Math.min(X(r.F)+4,W-90)+'" y="'+(T+10)+'" style="fill:var(--accent)">F obs '+f2(r.F)+'</text>'
+    :'<text x="'+(W-R)+'" y="'+(T+10)+'" text-anchor="end" style="fill:var(--accent)">F obs = '+f2(r.F)+' →</text>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="F distribution with critical region"><path d="'+area+'" fill="var(--bad-soft)" stroke="none"/><path d="'+line+'" fill="none" stroke="var(--ink)" stroke-width="1.6"/><line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(0)+'" y2="'+Y(0)+'" stroke="var(--muted)"/>'+ticks+'<line x1="'+X(crit)+'" x2="'+X(crit)+'" y1="'+(T+16)+'" y2="'+Y(0)+'" stroke="var(--bad)" stroke-dasharray="4 3"/><text x="'+(X(crit)+4)+'" y="'+(T+28)+'" style="fill:var(--bad)">F crit '+f2(crit)+' (α='+al+')</text>'+obs+'</svg><p class="muted" style="font-size:.85rem;margin:0">Curve: F('+r.d1+', '+r.d2+') if H₀ were true. Shaded: rejection region (top '+(al*100)+'%).</p>';
+}
+function renderAnova(){
+  const out=$("#an-out"),groups=parseGroups($("#an-in").value),al=+$("#an-alpha").value;
+  if(groups.length<2){out.innerHTML='<p>Enter at least two groups, one per line, e.g. <code>A: 50 52 48</code>.</p>';return}
+  const N=groups.reduce((s,g)=>s+g.v.length,0);
+  if(N<=groups.length){out.innerHTML='<p>Each group needs more than one value so the within-group df (N − k) is above zero.</p>';return}
+  const r=anova(groups);
+  if(!(r.MSW>0)){out.innerHTML='<p>All values inside each group are identical, so MS within is 0 and F is undefined. Change a value.</p>';return}
+  const crit=fCrit(al,r.d1,r.d2),sig=r.p<al;
+  const gm=f2(r.gm);
+  out.innerHTML='<span class="eyebrow">Result</span><h2 style="font-size:1.3rem;margin:4px 0 10px">F('+r.d1+', '+r.d2+') = '+f2(r.F)+', p '+(r.p<0.001?"&lt; .001":"= "+fp(r.p))+'</h2>'
+  +'<div class="decision '+(sig?"sig":"ns")+'">'+(sig?'F obs '+f2(r.F)+' &gt; F crit '+f2(crit)+' (p &lt; '+al+'): <b>reject H₀</b>. The group factor has a significant effect.':'F obs '+f2(r.F)+' ≤ F crit '+f2(crit)+' (p ≥ '+al+'): <b>fail to reject H₀</b>. No significant difference.')+'</div>'
+  +'<div class="tbl"><table><tr><th>Source</th><th class="n">SS</th><th class="n">df</th><th class="n">MS</th><th class="n">F</th><th class="n">p</th></tr>'
+  +'<tr><td>Between (condition)</td><td class="n">'+f2(r.SSB)+'</td><td class="n">'+r.d1+'</td><td class="n">'+f2(r.MSB)+'</td><td class="n">'+f2(r.F)+'</td><td class="n">'+fp(r.p)+'</td></tr>'
+  +'<tr><td>Within (error)</td><td class="n">'+f2(r.SSW)+'</td><td class="n">'+r.d2+'</td><td class="n">'+f2(r.MSW)+'</td><td></td><td></td></tr>'
+  +'<tr><td>Total</td><td class="n">'+f2(r.SST)+'</td><td class="n">'+(r.N-1)+'</td><td></td><td></td><td></td></tr></table></div>'
+  +plot(r,al,crit)
+  +'<h3>Step by step</h3><ol class="steps">'
+  +'<li><div>Group means and grand mean (k = '+r.k+', N = '+r.N+')<div class="formula">'+r.groups.map(g=>esc(g.name)+': X̄ = '+f2(g.m)+' (n = '+g.n+')').join(" · ")+' · grand X̄ = '+gm+'</div></div></li>'
+  +'<li><div>Between-group SS: Σ nᵢ(X̄ᵢ − X̄)²<div class="formula">'+r.groups.map(g=>g.n+'('+f2(g.m)+' − '+gm+')²').join(" + ")+' = <b>'+f2(r.SSB)+'</b></div></div></li>'
+  +'<li><div>Within-group SS: Σ Σ (Xᵢⱼ − X̄ᵢ)², group by group<div class="formula">'+r.groups.map(g=>f2(sum(g.v.map(x=>(x-g.m)**2)))).join(" + ")+' = <b>'+f2(r.SSW)+'</b></div></div></li>'
+  +'<li><div>Check: SST = SSB + SSW<div class="formula">'+f2(r.SSB)+' + '+f2(r.SSW)+' = '+f2(r.SST)+'</div></div></li>'
+  +'<li><div>Degrees of freedom<div class="formula">df between = k − 1 = '+r.d1+' · df within = N − k = '+r.d2+' · df total = N − 1 = '+(r.N-1)+'</div></div></li>'
+  +'<li><div>Mean squares<div class="formula">MSB = '+f2(r.SSB)+' / '+r.d1+' = '+f2(r.MSB)+' · MSW = '+f2(r.SSW)+' / '+r.d2+' = '+f2(r.MSW)+'</div></div></li>'
+  +'<li><div>F and decision<div class="formula">F = '+f2(r.MSB)+' / '+f2(r.MSW)+' = <b>'+f2(r.F)+'</b> vs F crit('+al+'; '+r.d1+', '+r.d2+') = '+f2(crit)+'</div></div></li></ol>';
+}
+const EXAMPLE="A: 50 52 48 51\nB: 55 53 57 56\nC: 62 60 63 61";
+$("#an-in").addEventListener("input",renderAnova);
+$("#an-alpha").addEventListener("change",renderAnova);
+$("#an-example").onclick=()=>{$("#an-in").value=EXAMPLE;renderAnova()};
+renderAnova();
+
+/* ---------- practice ---------- */
+let prob=null;
+const PR_IDS=["dfb","dfw","ssb","ssw","msb","msw","f"];
+function newProblem(){
+  const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),base=ri(40,70),spread=ri(0,1)?ri(1,3):ri(4,8);
+  const groups=["A","B","C"].map(name=>{const c=base+ri(-spread,spread);return {name,v:[0,0,0,0].map(()=>c+ri(-3,3))}});
+  prob=anova(groups);prob.crit=fCrit(0.05,prob.d1,prob.d2);
+  $("#pr-data").textContent=groups.map(g=>g.name+": "+g.v.join("  ")).join("\n");
+  PR_IDS.forEach(id=>{const el=$("#pr-"+id);el.value="";el.className=""});$("#pr-sig").value="";$("#pr-msg").textContent="Between-subject design, k = 3, n = 4 per group.";
+}
+function prAnswers(){return {dfb:prob.d1,dfw:prob.d2,ssb:prob.SSB,ssw:prob.SSW,msb:prob.MSB,msw:prob.MSW,f:prob.F}}
+$("#pr-check").onclick=()=>{
+  const ans=prAnswers();let right=0,tried=0;
+  PR_IDS.forEach(id=>{const el=$("#pr-"+id);if(el.value===""){el.className="";return}tried++;const v=+el.value,t=ans[id],ok=Math.abs(v-t)<=Math.max(0.05,Math.abs(t)*0.005);el.className=ok?"ok":"no";if(ok)right++});
+  const s=$("#pr-sig").value,sigOk=s?((s==="y")===(prob.p<0.05)):null;if(s){tried++;if(sigOk)right++}
+  $("#pr-msg").textContent=tried?right+" of "+tried+" correct."+(s?(sigOk?" Decision correct.":" Decision wrong: F crit(.05; 2, 9) = "+f2(prob.crit)+"."):""):"Fill in at least one value first.";
+};
+$("#pr-show").onclick=()=>{
+  const ans=prAnswers();PR_IDS.forEach(id=>{const el=$("#pr-"+id);el.value=id.startsWith("df")?ans[id]:f2(ans[id]);el.className="ok"});
+  $("#pr-sig").value=prob.p<0.05?"y":"n";
+  $("#an-in").value=$("#pr-data").textContent;renderAnova();
+  $("#pr-msg").textContent="Solution filled in. The full working is now in the calculator panel.";
+};
+$("#pr-new").onclick=newProblem;
+newProblem();
+
+/* ---------- essays ---------- */
+$("#es-list").innerHTML=ESSAYS.map(x=>'<details class="q"><summary><span class="tag">'+LN[x.l]+'</span><span>'+esc(x.q)+'</span></summary><div class="ans">'+x.a+'</div></details>').join("");
+$("#es-open").onclick=()=>document.querySelectorAll("#es-list details").forEach(d=>d.open=true);
+$("#es-close").onclick=()=>document.querySelectorAll("#es-list details").forEach(d=>d.open=false);
+</script>
+</body>
+</html>
