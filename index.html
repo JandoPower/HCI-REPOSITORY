@@ -146,8 +146,32 @@ svg text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
 .prac{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
 .prac label{display:flex;flex-direction:column;gap:3px;font-size:.85rem;color:var(--muted);min-width:0}
 .prac input{width:100%}
-.prac input.ok{border-color:var(--good);background:var(--good-soft)}
-.prac input.no{border-color:var(--bad);background:var(--bad-soft)}
+input.ok{border-color:var(--good);background:var(--good-soft)}
+input.no{border-color:var(--bad);background:var(--bad-soft)}
+
+/* guided practice */
+.gwrap{max-width:820px;display:flex;flex-direction:column;gap:14px}
+.gpick{display:flex;flex-direction:column;gap:10px}
+.gpick .row > .eyebrow{min-width:74px}
+.gtitle{font-size:1.3rem;margin:4px 0 8px}
+.gctx{margin-bottom:14px}
+.gctx table{width:auto;min-width:50%}
+.gsteps{display:flex;flex-direction:column;gap:10px}
+.gstep{border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.gstep.locked{opacity:.45}
+.gstep.done{border-color:var(--good)}
+.gstep.shown{border-style:dashed;border-color:var(--muted)}
+.gstep .sq{font-weight:500}
+.sn{display:block;font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.gstep.done .sn{color:var(--good)}
+.gfields{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.gfields label{display:flex;flex-direction:column;gap:3px;font-size:.85rem;color:var(--muted);min-width:0}
+.gfields input{width:100%}
+.gopts{display:flex;flex-direction:column;gap:6px}
+.hint{background:var(--accent-soft);border-radius:6px;padding:8px 12px;font-size:.94rem}
+.hint b{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-right:8px}
+.gmsg{font-size:.92rem}
+.gdone{margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--good-soft);border:1px solid var(--good);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 
 /* essay */
 .essay{display:flex;flex-direction:column;gap:10px;max-width:820px}
@@ -170,6 +194,7 @@ details.q .ans{border-top:1px dashed var(--line);padding-top:8px}
     </div>
     <nav class="tabs" role="tablist" aria-label="Study modes">
       <button class="tab" role="tab" id="t-notes" data-v="notes">Notes</button>
+      <button class="tab" role="tab" id="t-guided" data-v="guided">Guided Practice</button>
       <button class="tab" role="tab" id="t-cards" data-v="cards">Flashcards</button>
       <button class="tab" role="tab" id="t-quiz" data-v="quiz">Quiz</button>
       <button class="tab" role="tab" id="t-anova" data-v="anova">ANOVA Lab</button>
@@ -628,6 +653,18 @@ details.q .ans{border-top:1px dashed var(--line);padding-top:8px}
   </div>
 </section>
 
+<!-- ================= GUIDED ================= -->
+<section id="v-guided" hidden>
+  <div class="gwrap">
+    <div class="panel gpick">
+      <div class="row"><span class="eyebrow">Math</span><div class="chips" id="g-math"></div></div>
+      <div class="row"><span class="eyebrow">Concepts</span><div class="chips" id="g-con"></div></div>
+      <div class="row"><button class="btn primary" id="g-new">New problem</button><span class="muted" id="g-stats" style="font-size:.88rem"></span></div>
+    </div>
+    <div class="panel" id="g-box"></div>
+  </div>
+</section>
+
 <!-- ================= FLASHCARDS ================= -->
 <section id="v-cards" hidden>
   <div class="fc-wrap">
@@ -970,7 +1007,7 @@ const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(M
 const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 
 /* ---------- tabs ---------- */
-const VIEWS=["notes","cards","quiz","anova","essay"];
+const VIEWS=["notes","guided","cards","quiz","anova","essay"];
 function show(v){
   if(!VIEWS.includes(v)) v="notes";
   VIEWS.forEach(x=>{$("#v-"+x).hidden=x!==v;$("#t-"+x).setAttribute("aria-selected",x===v)});
@@ -1182,6 +1219,249 @@ $("#pr-show").onclick=()=>{
 };
 $("#pr-new").onclick=newProblem;
 newProblem();
+
+/* ---------- guided practice ---------- */
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pick=a=>a[Math.floor(Math.random()*a.length)];
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+// first option is the correct one; options get shuffled
+function choice(q,opts,hints,explain){const o=shuffle(opts.map((t,k)=>({t,ok:k===0})));return {q,options:o.map(x=>x.t),answer:o.findIndex(x=>x.ok),hints,explain}}
+// fields: [{l: label, a: answer, t: optional tolerance}]
+function num(q,fields,hints,explain){return {q,fields,hints,explain}}
+function dataTable(gs){const n=Math.max(...gs.map(g=>g.v.length));let h='<div class="tbl"><table><tr>'+gs.map(g=>'<th class="n">'+esc(g.name)+'</th>').join("")+'</tr>';for(let i=0;i<n;i++)h+='<tr>'+gs.map(g=>'<td class="n">'+(g.v[i]??"")+'</td>').join("")+'</tr>';return h+'</table></div>'}
+
+const THEMES=[
+ {iv:"coffee type",dv:"satisfaction score",lv:["A","B","C","D"],b:[45,65]},
+ {iv:"keyboard layout",dv:"typing speed (WPM)",lv:["QWERTY","Dvorak","Colemak","AZERTY"],b:[35,60]},
+ {iv:"menu design",dv:"task time (s)",lv:["Linear","Pie","Grid","Ribbon"],b:[20,40]},
+ {iv:"tutorial format",dv:"quiz score",lv:["Video","Text","Interactive","None"],b:[55,80]},
+ {iv:"notification style",dv:"SUS score",lv:["Banner","Sound","Vibration","LED"],b:[55,80]}
+];
+function makeGroups(th,k,n,spread){
+  const base=ri(th.b[0],th.b[1]);
+  return th.lv.slice(0,k).map(name=>{const c=base+ri(-spread,spread),v=[];for(let i=0;i<n-1;i++)v.push(c+ri(-3,3));let last=c+ri(-3,3);while((sum(v)+last)%n)last++;v.push(last);return {name,v}});
+}
+const GEN={};
+
+GEN.anova=()=>{
+  const th=pick(THEMES),k=3,n=pick([3,4,4,5]);let r;
+  do{r=anova(makeGroups(th,k,n,pick([1,2,5,7])))}while(!(r.SSW>0));
+  const crit=fCrit(.05,r.d1,r.d2),sig=r.F>crit,gm=r.gm,G2=r.groups,ss=G2.map(x=>sum(x.v.map(y=>(y-x.m)**2)));
+  const rep="F("+r.d1+", "+r.d2+") = "+f2(r.F)+", p "+(r.p<.001?"&lt; .001":"= "+r.p.toFixed(3).replace(/^0/,""));
+  return {tag:"Math · One-way ANOVA (BSD)",title:"Does "+th.iv+" affect "+th.dv+"?",
+  ctx:'<p>A between-subject study compares '+k+' versions of <b>'+th.iv+'</b>. Each participant used only one version ('+n+' per group). The measure is <b>'+th.dv+'</b>.</p>'+dataTable(G2)+'<p class="muted">Given: F crit(α = .05; '+r.d1+', '+r.d2+') = '+f2(crit)+'. Round to 2 decimals.</p>',
+  steps:[
+   num("Find each group mean X̄ᵢ.",G2.map(x=>({l:"X̄ "+x.name,a:x.m})),["Mean = the group's total ÷ n.",G2.map(x=>x.name+": ("+x.v.join(" + ")+") ÷ "+n+" = "+sum(x.v)+" ÷ "+n).join("<br>")],"Means: "+G2.map(x=>x.name+" = "+f2(x.m)).join(", ")+"."),
+   num("Find the grand mean X̄.",[{l:"X̄",a:gm}],["The mean of all N = "+r.N+" scores. With equal group sizes it equals the mean of the group means.","("+G2.map(x=>f2(x.m)).join(" + ")+") ÷ "+k],"X̄ = "+f2(gm)+"."),
+   num("Compute the between-group sum of squares, SS<sub>B</sub>.",[{l:"SS_B",a:r.SSB}],["SS<sub>B</sub> = Σ nᵢ(X̄ᵢ − X̄)²: how far each group mean sits from the grand mean, weighted by group size.",G2.map(x=>n+"("+f2(x.m)+" − "+f2(gm)+")²").join(" + "),"The three terms are "+G2.map(x=>f2(n*(x.m-gm)**2)).join(", ")+". Add them."],"SS<sub>B</sub> = "+f2(r.SSB)+"."),
+   num("Compute the SS inside each group, then SS<sub>W</sub>.",G2.map((x,i)=>({l:"SS "+x.name,a:ss[i]})).concat([{l:"SS_W",a:r.SSW}]),["For each group: subtract the group's own mean from every score, square, and add. SS<sub>W</sub> is the total over all groups.",G2.map(x=>x.name+": "+x.v.map(y=>"("+y+" − "+f2(x.m)+")²").join(" + ")).join("<br>"),"Group SS: "+G2.map((x,i)=>x.name+" = "+f2(ss[i])).join(", ")+". Add them for SS<sub>W</sub>."],"SS<sub>W</sub> = "+ss.map(f2).join(" + ")+" = "+f2(r.SSW)+"."),
+   num("Find SS<sub>T</sub>.",[{l:"SS_T",a:r.SST}],["Total variability = between + within.","SS<sub>T</sub> = "+f2(r.SSB)+" + "+f2(r.SSW)],"SS<sub>T</sub> = "+f2(r.SST)+". Computing Σ(Xᵢⱼ − X̄)² directly gives the same number."),
+   num("Give the degrees of freedom.",[{l:"df between",a:r.d1},{l:"df within",a:r.d2},{l:"df total",a:r.N-1}],["k = "+k+" groups and N = "+r.N+" scores in total.","between = k − 1 · within = N − k · total = N − 1"],"df = "+r.d1+", "+r.d2+", "+(r.N-1)+" (and "+r.d1+" + "+r.d2+" = "+(r.N-1)+")."),
+   num("Turn the sums of squares into mean squares.",[{l:"MS_B",a:r.MSB},{l:"MS_W",a:r.MSW}],["MS = SS ÷ its df. Raw SS can't be compared because it grows with the number of scores.","MS<sub>B</sub> = "+f2(r.SSB)+" ÷ "+r.d1+" · MS<sub>W</sub> = "+f2(r.SSW)+" ÷ "+r.d2],"MS<sub>B</sub> = "+f2(r.MSB)+", MS<sub>W</sub> = "+f2(r.MSW)+"."),
+   num("Compute F.",[{l:"F",a:r.F}],["F compares between-group variance with within-group variance.","F = MS<sub>B</sub> ÷ MS<sub>W</sub> = "+f2(r.MSB)+" ÷ "+f2(r.MSW)],"F("+r.d1+", "+r.d2+") = "+f2(r.F)+"."),
+   choice("Compare F with F crit = "+f2(crit)+". What's your decision at α = .05?",[sig?"Reject H₀: the difference is significant":"Fail to reject H₀: not significant",sig?"Fail to reject H₀: not significant":"Reject H₀: the difference is significant"],["F crit marks the top 5% of the F distribution when H₀ is true. Landing beyond it would be unusual if there were no real difference.","Is "+f2(r.F)+" bigger than "+f2(crit)+"?"],(sig?f2(r.F)+" &gt; "+f2(crit)+", so p &lt; .05: reject H₀. ":f2(r.F)+" ≤ "+f2(crit)+", so p ≥ .05: fail to reject H₀. ")+"Report it as "+rep+"."),
+   sig?choice("What can you conclude, and what comes next?",["At least one group mean differs; run post-hoc tests to find which","All "+k+" groups differ from each other","The group with the highest mean is significantly better than both others","Nothing yet; you need a larger sample"],["ANOVA's H<sub>A</sub> is “at least one mean differs”.","ANOVA alone doesn't say which pair differs."],"A significant F only says at least one mean differs. Post-hoc tests find which pairs.")
+      :choice("What can you conclude?",["There isn't enough evidence that "+th.iv+" affects "+th.dv,"The groups are proven to be equal","At least one group mean differs","Run post-hoc tests to find which groups differ"],["Failing to reject H₀ isn't the same as proving it.","Post-hoc tests only follow a significant ANOVA."],"Not significant: you can't claim an effect, but you haven't proven the groups are equal either.")
+  ]};
+};
+
+GEN.table=()=>{
+  const k=ri(3,4),n=ri(4,8),N=k*n,d1=k-1,d2=N-k,crit=fCrit(.05,d1,d2),msw=ri(20,120)/10;
+  const Ft=Math.random()<.6?crit*(1.3+Math.random()*2.5):crit*(.2+Math.random()*.6);
+  const SSW=+(msw*d2).toFixed(1),SSB=+(Ft*msw*d1).toFixed(1),SST=+(SSB+SSW).toFixed(1),MSB=SSB/d1,MSW=SSW/d2,F=MSB/MSW,sig=F>crit,hideB=Math.random()<.5;
+  const c=v=>'<td class="n">'+v+'</td>',Q=c("?");
+  return {tag:"Math · ANOVA table",title:"Complete the ANOVA table",
+  ctx:'<p>A one-way between-subject ANOVA compares <b>'+k+'</b> conditions with <b>'+n+'</b> participants in each.</p><div class="tbl"><table><tr><th>Source</th><th class="n">SS</th><th class="n">df</th><th class="n">MS</th><th class="n">F</th></tr><tr><td>Between</td>'+(hideB?Q:c(SSB.toFixed(1)))+Q+Q+Q+'</tr><tr><td>Within</td>'+(hideB?c(SSW.toFixed(1)):Q)+Q+Q+'<td></td></tr><tr><td>Total</td>'+c(SST.toFixed(1))+Q+'<td></td><td></td></tr></table></div><p class="muted">Given: F crit(α = .05; '+d1+', '+d2+') = '+f2(crit)+'. Round to 2 decimals.</p>',
+  steps:[
+   num("Find the missing sum of squares.",[{l:hideB?"SS_B":"SS_W",a:hideB?SSB:SSW}],["Total variability splits into between-group + within-group.",hideB?"SS<sub>B</sub> = SS<sub>T</sub> − SS<sub>W</sub> = "+SST.toFixed(1)+" − "+SSW.toFixed(1):"SS<sub>W</sub> = SS<sub>T</sub> − SS<sub>B</sub> = "+SST.toFixed(1)+" − "+SSB.toFixed(1)],"SS<sub>"+(hideB?"B":"W")+"</sub> = "+(hideB?SSB:SSW).toFixed(1)+"."),
+   num("Fill in the three df.",[{l:"df between",a:d1},{l:"df within",a:d2},{l:"df total",a:N-1}],["First find N: "+k+" groups × "+n+" people = "+N+".","between = k − 1 · within = N − k · total = N − 1"],"df = "+d1+", "+d2+", "+(N-1)+"."),
+   num("Compute both mean squares.",[{l:"MS_B",a:MSB},{l:"MS_W",a:MSW}],["MS = SS ÷ df.","MS<sub>B</sub> = "+SSB.toFixed(1)+" ÷ "+d1+" · MS<sub>W</sub> = "+SSW.toFixed(1)+" ÷ "+d2],"MS<sub>B</sub> = "+f2(MSB)+", MS<sub>W</sub> = "+f2(MSW)+"."),
+   num("Compute F.",[{l:"F",a:F}],["F = MS<sub>B</sub> ÷ MS<sub>W</sub>.",f2(MSB)+" ÷ "+f2(MSW)],"F("+d1+", "+d2+") = "+f2(F)+"."),
+   choice("Decision at α = .05?",[sig?"Reject H₀: significant":"Fail to reject H₀: not significant",sig?"Fail to reject H₀: not significant":"Reject H₀: significant"],["Compare F with F crit = "+f2(crit)+".","Bigger than F crit means p &lt; .05."],sig?f2(F)+" &gt; "+f2(crit)+": reject H₀.":f2(F)+" ≤ "+f2(crit)+": fail to reject H₀."),
+   choice("In plain words, F = "+f2(F)+" means…",["The variance between the group means is "+f2(F)+" times the variance within the groups","The group means differ by "+f2(F)+" points","There's a "+f2(F)+"% chance that H₀ is true","Each group has "+f2(F)+" times more participants"],["F is a ratio of two variances.","Top: MS<sub>B</sub> (between). Bottom: MS<sub>W</sub> (within, the noise)."],"F is effect ÷ noise: between-group variance relative to within-group variance.")
+  ]};
+};
+
+GEN.df=()=>{
+  const th=pick(THEMES),k=ri(2,4),n=ri(5,15),N=k*n,d1=k-1,d2=N-k,m=ri(40,70),c=ri(4,6);
+  const known=Array.from({length:c-1},()=>m+ri(-6,6)),last=m*c-sum(known);
+  return {tag:"Math · Degrees of freedom",title:"Work out the degrees of freedom",
+  ctx:'<p><b>Part 1.</b> '+N+' participants are randomly split into '+k+' equal groups. Each group uses only one '+th.iv+' ('+th.lv.slice(0,k).join(", ")+'), and you run a one-way ANOVA on '+th.dv+'.</p><p><b>Part 2.</b> In one group, '+c+' scores have a mean of exactly '+m+'. You know '+(c-1)+' of them: <span class="mono">'+known.join(", ")+'</span>.</p>',
+  steps:[
+   num("Part 1: how many groups (k), and how many people per group (n)?",[{l:"k",a:k},{l:"n",a:n}],["k is the number of conditions; n = N ÷ k.",N+" ÷ "+k],"k = "+k+", n = "+n+", N = "+N+"."),
+   num("df between groups?",[{l:"df between",a:d1}],["One less than the number of group means.","k − 1 = "+k+" − 1"],"df<sub>B</sub> = "+d1+"."),
+   num("df within groups?",[{l:"df within",a:d2}],["Each group loses one df to its own mean, so it's N − k.",N+" − "+k],"df<sub>W</sub> = "+d2+"."),
+   num("df total? (Check that it adds up.)",[{l:"df total",a:N-1}],["N − 1.","It should equal df between + df within = "+d1+" + "+d2+"."],"df<sub>T</sub> = "+(N-1)+" = "+d1+" + "+d2+"."),
+   choice("Which distribution is your F compared against?",["F("+d1+", "+d2+")","F("+d2+", "+d1+")","F("+k+", "+N+")","F("+(N-1)+", "+d1+")"],["F = MS<sub>B</sub> ÷ MS<sub>W</sub>, so the numerator's df comes first.","Numerator df = between (k − 1); denominator df = within (N − k)."],"F(k − 1, N − k) = F("+d1+", "+d2+")."),
+   num("Part 2: what must the missing score be?",[{l:"missing score",a:last}],["A fixed mean fixes the total: total = mean × count.","Total = "+m+" × "+c+" = "+m*c+". The known scores add to "+sum(known)+"."],"Missing = "+m*c+" − "+sum(known)+" = "+last+"."),
+   num("So how many of the "+c+" scores were actually free to vary?",[{l:"free values (df)",a:c-1}],["You just showed the last score was forced by the mean.","n − 1"],"df = "+(c-1)+". That's why each group of n scores contributes n − 1 df.")
+  ]};
+};
+
+GEN.survey=()=>{
+  let r,mode,cnt;
+  for(;;){cnt=ri(9,12);r=Array.from({length:cnt},()=>pick([1,2,3,3,4,4,4,5,5]));const f=[0,0,0,0,0,0];r.forEach(x=>f[x]++);const mx=Math.max(...f),ms=[1,2,3,4,5].filter(i=>f[i]===mx);if(ms.length===1){mode=ms[0];break}}
+  const s=r.slice().sort((a,b)=>a-b),med=cnt%2?s[(cnt-1)/2]:(s[cnt/2-1]+s[cnt/2])/2,mn=mean(r),hi=r.filter(x=>x>=4).length,pct=hi/cnt*100,g=pick([2,3]);
+  const app=pick(["food-delivery app","campus bus app","library kiosk","smart TV remote","course registration site"]);
+  return {tag:"Math · Survey statistics",title:"Summarize the satisfaction ratings",
+  ctx:'<p>'+cnt+' users of a '+app+' answered “How satisfied are you?” on a 5-point CSAT scale (1 = very dissatisfied … 5 = very satisfied).</p><div class="formula">'+r.join(", ")+'</div>',
+  steps:[
+   choice("What level of measurement is a single 1–5 rating?",["Ordinal","Nominal","Interval","Ratio"],["Is there an order? Are the gaps between 1, 2, 3… guaranteed to be equal?","Ordered categories, but the gaps aren't guaranteed equal."],"<b>Ordinal</b>: ordered, but “satisfied → very satisfied” isn't guaranteed to be the same gap as “neutral → satisfied”."),
+   num("Find the median.",[{l:"median",a:med}],["Sort the ratings and take the middle one. With an even count, average the two middle ones.","Sorted: "+s.join(", ")+" (n = "+cnt+")"],"Median = "+med+"."),
+   num("Find the mode.",[{l:"mode",a:mode}],["The most frequent rating.","Counts: "+[1,2,3,4,5].map(i=>i+" → "+r.filter(x=>x===i).length).join(", ")],"Mode = "+mode+"."),
+   num("Find the mean.",[{l:"mean",a:mn}],["Add all the ratings and divide by n.","Sum = "+sum(r)+", n = "+cnt],"Mean = "+sum(r)+" ÷ "+cnt+" = "+f2(mn)+". Lecture 1 asks for mean, median and mode on CSAT, but for ordinal data the median is the safer center."),
+   num("What percentage are highly satisfied (rated 4 or 5)?",[{l:"% (0–100)",a:pct,t:.6}],["Count the 4s and 5s, divide by n, multiply by 100.",hi+" of "+cnt+" users"],f2(pct)+"%."),
+   choice("You collect the same ratings for "+(g===2?"one other app":"two other apps")+". Which test compares the groups?",[g===2?"Mann-Whitney U":"Kruskal-Wallis",g===2?"Kruskal-Wallis":"Mann-Whitney U","Chi-square","t-test"],["The data are ordinal, so use a rank-based test.",g===2?"Two groups.":"Three groups."],(g===2?"<b>Mann-Whitney U</b> compares two groups":"<b>Kruskal-Wallis</b> compares three or more groups")+" of ordinal data.")
+  ]};
+};
+
+GEN.errors=()=>{
+  const al=pick([.05,.01]),p=pick([ri(1,8)/1000,ri(11,49)/1000,ri(52,400)/1000]),rej=p<al,h0=Math.random()<.5,beta=ri(10,30)/100,th=pick(THEMES),ps=p.toFixed(3);
+  const out=rej&&h0?"Type I error (false positive)":!rej&&!h0?"Type II error (false negative)":"Correct decision";
+  return {tag:"Math · Hypothesis testing",title:"Decide, then judge the decision",
+  ctx:'<p>A one-way ANOVA on whether <b>'+th.iv+'</b> affects <b>'+th.dv+'</b> gives <b>p = '+ps+'</b>. The significance level is <b>α = '+al+'</b>.</p>',
+  steps:[
+   choice("What's your decision?",[rej?"Reject H₀: significant":"Fail to reject H₀: not significant",rej?"Fail to reject H₀: not significant":"Reject H₀: significant"],["Reject when p is smaller than α.","Is "+ps+" &lt; "+al+"?"],"p = "+ps+(rej?" &lt; ":" ≥ ")+al+", so "+(rej?"reject H₀.":"fail to reject H₀.")),
+   choice("Suppose that in reality H₀ is "+(h0?"<b>true</b> (no real difference)":"<b>false</b> (there is a real difference)")+". Given your decision, what happened?",[out].concat(["Type I error (false positive)","Type II error (false negative)","Correct decision"].filter(x=>x!==out)),["Type I = rejecting a true H₀. Type II = not rejecting a false H₀.","You "+(rej?"rejected":"did not reject")+" H₀, and H₀ is "+(h0?"true":"false")+"."],"<b>"+out+"</b>."),
+   num("What's the probability of a Type I error at this α?",[{l:"P(Type I)",a:al,t:.0005}],["α is defined as exactly this probability.","α = the significance level."],"P(Type I) = α = "+al+"."),
+   num("If β = "+beta.toFixed(2)+", what is the statistical power?",[{l:"power (0–1)",a:1-beta,t:.005}],["Power = the probability of correctly rejecting a false H₀.","Power = 1 − β"],"Power = 1 − "+beta.toFixed(2)+" = "+(1-beta).toFixed(2)+"."),
+   choice("What does p = "+ps+" actually mean?",["If H₀ were true, a result at least this extreme would happen "+(p*100).toFixed(1)+"% of the time","There's a "+(p*100).toFixed(1)+"% chance that H₀ is true","The effect size is "+ps,"There's a "+((1-p)*100).toFixed(1)+"% chance the result will replicate"],["p is computed assuming H₀ is true.","p = P(F &gt; F<sub>obs</sub> | H₀)"],"p = P(F &gt; F<sub>obs</sub> | H₀): how unusual the observed F would be if there were no real difference."),
+   choice("Why is α chosen and fixed first?",["A Type I error (claiming an effect that isn't real) is considered more serious","Because β is always 0","Because power doesn't depend on β","Because it makes F larger"],["Which mistake is worse: claiming a fake effect, or missing a real one?","The lecture says to fix α first because of how serious one error type is."],"Type I errors are treated as more serious, so α (5% or 1%) is fixed first.")
+  ]};
+};
+
+const TOPICS=[
+ {iv:"menu layout",lv:["a linear menu","a pie menu","a grid menu","a ribbon menu"],dv:"task completion time (seconds)",sc:"Ratio",ctrl:"the same laptop and mouse"},
+ {iv:"keyboard layout",lv:["QWERTY","Dvorak","Colemak","AZERTY"],dv:"typing speed (words per minute)",sc:"Ratio",ctrl:"the same text passage"},
+ {iv:"notification style",lv:["a banner","a sound","a vibration","an LED blink"],dv:"reaction time (ms)",sc:"Ratio",ctrl:"the same phone model"},
+ {iv:"tutorial format",lv:["a video","a text guide","an interactive tour","no tutorial"],dv:"SUS score",sc:"Interval",ctrl:"the same app version"},
+ {iv:"seat vibration pattern",lv:["short pulses","a long buzz","rising intensity","a double tap"],dv:"number of missed warnings",sc:"Ratio",ctrl:"the same driving-simulator route"},
+ {iv:"text-editing tool",lv:["a baseline editor","Textoshop","a chatbot assistant","a word processor"],dv:"NASA-TLX workload score",sc:"Interval",ctrl:"the same editing task"},
+ {iv:"coffee type",lv:["coffee A","coffee B","coffee C","coffee D"],dv:"satisfaction score (0–100)",sc:"",ctrl:"the same cup and serving temperature"}
+];
+GEN.design=()=>{
+  const t=pick(TOPICS),k=ri(2,4),n=ri(6,12),bsd=Math.random()<.5,lv=t.lv.slice(0,k),N=k*n,ctrl=cap(t.ctrl);
+  const ctx=bsd?'<p>Researchers recruit <b>'+N+'</b> people and randomly assign them to '+k+' groups of '+n+'. Each group tries only one '+t.iv+': '+lv.join(", ")+'. They record each person\'s <b>'+t.dv+'</b>. Everyone uses '+t.ctrl+'.</p>'
+    :'<p>Researchers recruit <b>'+n+'</b> people. Each person tries <i>all</i> '+k+' versions of the '+t.iv+' ('+lv.join(", ")+') in a counterbalanced order. They record <b>'+t.dv+'</b> for every version. Everyone uses '+t.ctrl+'.</p>';
+  const S=[
+   choice("What is the independent variable?",["The "+t.iv,"The "+t.dv,ctrl,"The number of participants"],["The independent variable is what the researcher changes on purpose (the cause).","Which thing comes in different versions?"],"IV = <b>"+t.iv+"</b>, with "+k+" levels."),
+   choice("What is the dependent variable?",["The "+t.dv,"The "+t.iv,ctrl,"The order of the conditions"],["The dependent variable is what gets measured (the effect).","What number is recorded for each person?"],"DV = <b>"+t.dv+"</b>."),
+   choice("Which is a controlled variable?",[ctrl,"The "+t.iv,"The "+t.dv,"Which group each person is in"],["Controlled variables are kept constant so they can't explain the result.","What is the same for everyone?"],"Controlled = <b>"+t.ctrl+"</b>."),
+   choice("Which study design is this?",[bsd?"Between-subject design":"Within-subject design",bsd?"Within-subject design":"Between-subject design","Mixed design"],["Count how many conditions each participant experiences.",bsd?"Each person tries one version only.":"Each person tries every version."],bsd?"<b>Between-subject</b>: each participant experiences only one condition.":"<b>Within-subject</b>: each participant experiences all conditions.")
+  ];
+  S.push(bsd?num("Give df between and df within for a one-way ANOVA.",[{l:"df between",a:k-1},{l:"df within",a:N-k}],["k = "+k+" conditions, N = "+N+" people.","between = k − 1 · within = N − k"],"df = "+(k-1)+" and "+(N-k)+", so F is compared with F("+(k-1)+", "+(N-k)+").")
+    :choice("Which term does the WSD model have that the BSD model doesn't?",["Sⱼ, the participant effect (how high or low each person scores overall)","A second grand mean","A treatment effect αᵢ","An error term ε"],["BSD: X = μ + αᵢ + ε. What gets added for WSD?","Each person is measured several times, so their personal baseline can be separated out."],"WSD: X = μ + αᵢ + <b>Sⱼ</b> + ε. The participant effect is pulled out of the error."));
+  S.push(choice("Which analysis fits comparing the "+k+" conditions?",[k===2?"A t-test (two conditions)":"A one-way ANOVA (three or more conditions)",k===2?"A one-way ANOVA (three or more conditions)":"A t-test (two conditions)","A chi-square test","Mann-Whitney U"],["Count the conditions, and check the DV is a numeric score.","t-test: 2 groups. ANOVA: k ≥ 3."],k===2?"Two conditions: a <b>t-test</b> is enough.":"Three or more conditions: <b>one-way ANOVA</b> (a t-test only handles two)."));
+  if(t.sc) S.push(choice("What level of measurement is the dependent variable?",[t.sc].concat(["Nominal","Ordinal","Interval","Ratio"].filter(x=>x!==t.sc)),["Order? Equal gaps? True zero?",t.sc==="Ratio"?"Here 0 really means none of it.":"Psychometric scores like SUS and NASA-TLX are treated as interval."],"<b>"+t.sc+"</b>."));
+  S.push(bsd?choice("What's a known drawback of this design?",["It needs more participants, and individual differences add noise","Order and learning effects between conditions","Every participant must try every condition","It has no error term"],["Think about who is in each group.","Different people in each group, so their personal differences end up in the error."],"BSD needs more people, and individual differences stay in the error term. The upside: no order or carry-over effects.")
+    :choice("What's a known risk of this design, and how is it handled?",["Order, learning or fatigue effects; counterbalance the order","Too few data points; add more groups","Individual differences can't be separated; switch to BSD","There's no risk"],["Each person does several conditions in a row. What could carry over?","The scenario already says how the order was set."],"WSD risks order effects (learning, fatigue), handled by counterbalancing. The upside: fewer people, and the participant effect is removed."));
+  return {tag:"Concepts · Study design",title:"Break down this user study",ctx,steps:S};
+};
+
+const VARS=[["device type (phone / tablet / laptop)","Nominal"],["major (CS / design / business)","Nominal"],["preferred input method (touch / voice / keyboard)","Nominal"],["rating on a single 5-point Likert item","Ordinal"],["ranking of four designs from best to worst","Ordinal"],["education level (high school / bachelor / master)","Ordinal"],["room temperature in °C during the session","Interval"],["calendar year they got their first phone","Interval"],["SUS score","Interval"],["NASA-TLX workload score","Interval"],["task completion time in seconds","Ratio"],["number of clicks to finish a task","Ratio"],["number of errors made","Ratio"],["age in years","Ratio"]];
+const SC={Nominal:{c:"Mode",t2:"Chi-square",t3:"Chi-square",why:"categories with no order",h:"There's no natural order between the categories."},Ordinal:{c:"Median",t2:"Mann-Whitney U",t3:"Kruskal-Wallis",why:"ordered, but the gaps aren't guaranteed equal",h:"There's an order, but is the gap between 1st and 2nd the same as between 2nd and 3rd?"},Interval:{c:"Mean",t2:"t-test",t3:"One-way ANOVA",why:"equal gaps but no true zero",h:"Equal gaps, but 0 doesn't mean “none of it”."},Ratio:{c:"Mean",t2:"t-test",t3:"One-way ANOVA",why:"equal gaps and a true zero",h:"0 really means none (0 seconds, 0 clicks), so ratios make sense."}};
+GEN.scale=()=>{
+  const [v,s]=pick(VARS),g=pick([2,3]),I=SC[s],ps=/SUS|TLX/.test(v),test=g===2?I.t2:I.t3;
+  return {tag:"Concepts · Measurement scales",title:"Pick the scale, the statistic and the test",ctx:'<p>In a study with <b>'+g+' conditions</b>, you record each participant\'s <b>'+v+'</b>.</p>',
+  steps:[
+   choice("Which level of measurement is it?",[s].concat(["Nominal","Ordinal","Interval","Ratio"].filter(x=>x!==s)),["Ask in order: Is there an order? Are the gaps equal? Is there a true zero?",ps?"Psychometric scores like SUS and NASA-TLX are treated as having equal gaps, but 0 doesn't mean “none”.":I.h],"<b>"+s+"</b>: "+I.why+(ps?" (psychometric scores are treated as interval).":".")),
+   choice("Which center should you report?",[I.c].concat(["Mode","Median","Mean"].filter(x=>x!==I.c)),["Nominal allows only counting. Ordinal allows ranking. Interval and ratio allow arithmetic.","For "+s.toLowerCase()+" data the allowed operations are "+(s==="Nominal"?"counting and the mode":s==="Ordinal"?"ranking, the median and percentiles":s==="Interval"?"adding/subtracting and the mean":"all math")+"."],"<b>"+I.c+"</b>."),
+   choice("To test whether the "+g+" conditions differ, which test fits?",[test].concat(shuffle(["Chi-square","Mann-Whitney U","Kruskal-Wallis","t-test","One-way ANOVA"].filter(x=>x!==test)).slice(0,3)),["Nominal → chi-square. Ordinal → rank-based tests. Interval/ratio → t-test or ANOVA.",s==="Nominal"?"Nominal data → chi-square, whatever the number of groups.":g===2?"Two groups: t-test (interval/ratio) or Mann-Whitney U (ordinal).":"Three groups: one-way ANOVA (interval/ratio) or Kruskal-Wallis (ordinal)."],"<b>"+test+"</b> for "+s.toLowerCase()+" data with "+g+" groups.")
+  ]};
+};
+
+const CATS=[
+{c:"Design principle",L:"L1",o:["Visibility","Feedback","Constraints","Mapping","Consistency","Affordance"],h:"What is the design doing: showing what to do next, reporting what happened, limiting choices, matching controls to effects, repeating a familiar pattern, or hinting at how to use it?",d:{Visibility:"shows people what they can do next",Feedback:"tells people what the system just did",Constraints:"limits options to the ones that make sense right now",Mapping:"controls relate clearly to their effects or real-world layout",Consistency:"similar operations for similar tasks",Affordance:"the object itself hints at how to use it"},s:[
+["A form's Submit button stays greyed out until every required field is filled.","Constraints"],["Your phone gives a short buzz when a long-press on an icon registers.","Feedback"],["Two light switches sit in the same left-to-right order as the ceiling lights they control.","Mapping"],["Every app on the phone uses the same swipe-down gesture to refresh.","Consistency"],["A raised button with a shadow looks like it can be pressed.","Affordance"],["A website keeps its main menu at the top so you can always see where you can go.","Visibility"],["A USB plug only fits a port of the matching shape.","Constraints"],["An upload shows a progress bar with the percentage done.","Feedback"],["Ctrl+Z undoes the last action in every program of an office suite.","Consistency"],["A door has a vertical bar handle that invites you to pull.","Affordance"],["Dragging a volume slider to the right makes the sound louder.","Mapping"],["A TV remote puts its most-used functions on labeled buttons on the front instead of hiding them in menus.","Visibility"]]},
+{c:"Usability goal",L:"L1",o:["Effectiveness","Efficiency","Safety","Utility","Learnability","Memorability"],h:"Which question is being asked: does it do the job, how many steps, can you recover from errors, are the right functions there, can you learn it by exploring, can you remember it later?",d:{Effectiveness:"how good the product is at doing what it's supposed to do",Efficiency:"how well it supports people in carrying out tasks (fewer steps)",Safety:"protecting people from dangerous situations and letting them recover from errors",Utility:"providing the right kind of functionality",Learnability:"how easy it is to learn",Memorability:"how easy it is to remember how to use"},s:[
+["Buying a bus ticket in the app takes 9 taps; the redesign cuts it to 3.","Efficiency"],["Deleted emails stay in a trash folder for 30 days so mistakes can be undone.","Safety"],["A first-time user figures out the camera app just by trying the buttons.","Learnability"],["Someone who files taxes once a year still remembers how to use the tax website.","Memorability"],["A photo app has no crop function, which its users need for their work.","Utility"],["Can shoppers actually find and buy the item they came for?","Effectiveness"],["A confirmation dialog appears before a disk is formatted.","Safety"],["Keyboard shortcuts let expert users finish common tasks in fewer steps.","Efficiency"]]},
+{c:"Interaction type",L:"L3",o:["Instructing","Conversing","Manipulating","Exploring","Responding"],h:"Who starts it, and how: issuing commands, having a dialogue, directly handling objects, moving through a space, or the system taking the initiative?",d:{Instructing:"issuing commands or pressing buttons to tell the system what to do",Conversing:"a two-way dialogue with the system as a partner",Manipulating:"directly handling digital objects using physical-world knowledge",Exploring:"moving through a virtual or physical environment",Responding:"the system takes the initiative and the person responds"},s:[
+["Typing a command into a terminal to list files.","Instructing"],["Asking a voice assistant about the weather, and it asks back “Which city?”","Conversing"],["Pinching to zoom in on a photo.","Manipulating"],["Walking around a virtual museum in VR.","Exploring"],["A car beeps and flashes an alert when you drift out of your lane.","Responding"],["Dragging a file into a folder.","Manipulating"],["Choosing Print from a menu.","Instructing"],["Moving through a 3D digital twin of a factory.","Exploring"],["A fitness band buzzes to tell you it's time to stand up.","Responding"],["Chatting with a customer-service bot to change a booking.","Conversing"]]},
+{c:"Triangulation type",L:"L5",o:["Data","Investigator","Theories","Methodological"],h:"What is being varied: where, when or who the data comes from, who analyzes it, which theory interprets it, or which method collects it?",d:{Data:"data from different sources, times, places or people",Investigator:"different researchers collect and interpret the data",Theories:"different theoretical frameworks are used to view the data",Methodological:"different data-gathering techniques are combined"},s:[
+["Three researchers code the same interview transcripts separately.","Investigator"],["You combine interaction logs, a questionnaire and interviews.","Methodological"],["You collect data from users in Seoul and Daegu, in the morning and in the evening.","Data"],["You interpret the same observations through both distributed cognition and embodied interaction.","Theories"]]},
+{c:"Sampling method",L:"L5",o:["Random sampling","Stratified sampling","Convenience sampling"],h:"Was everyone equally likely to be picked, was the population split into groups first, or did you take whoever was available?",d:{"Random sampling":"choosing people randomly from the population","Stratified sampling":"dividing the population into groups, then sampling randomly within each","Convenience sampling":"using whoever is available (nonprobability; hard to generalize)"},s:[
+["You survey whoever walks past the library entrance.","Convenience sampling"],["All student IDs go into a hat and 50 are drawn.","Random sampling"],["You split students by year (1st–4th) and randomly pick 10 from each year.","Stratified sampling"],["You ask classmates in your own HCI section.","Convenience sampling"]]},
+{c:"External cognition",L:"L4",o:["Cognitive offloading","Computational offloading","Annotating","Cognitive tracing"],h:"Is the outside representation helping you remember, helping you calculate, marking changes, or rearranging things?",d:{"Cognitive offloading":"an external representation reduces memory load","Computational offloading":"an external representation helps carry out a computation","Annotating":"modifying a representation to note changes (crossing off, underlining)","Cognitive tracing":"rearranging items into a different order or structure"},s:[
+["Setting a calendar reminder for a friend's birthday.","Cognitive offloading"],["Writing out long division on paper.","Computational offloading"],["Crossing off finished items on a to-do list.","Annotating"],["Rearranging sticky notes into groups on a whiteboard.","Cognitive tracing"],["Highlighting the slides you've already memorized.","Annotating"],["Sorting your exam notes into piles by lecture.","Cognitive tracing"]]},
+{c:"Gulf",L:"L4",o:["Gulf of execution","Gulf of evaluation"],h:"Is the user stuck on how to do something, or on understanding what the system did?",d:{"Gulf of execution":"the gap from the user to the system: figuring out how to act","Gulf of evaluation":"the gap from the system back to the user: understanding what happened"},s:[
+["You can't figure out which button on the new microwave starts defrosting.","Gulf of execution"],["You tap Send but nothing changes on screen, so you can't tell if the message went.","Gulf of evaluation"],["A printer blinks an orange light and you don't know what it means.","Gulf of evaluation"],["You want to turn off autocorrect but can't find the setting.","Gulf of execution"]]},
+{c:"Double Diamond phase",L:"L2",o:["Discover","Define","Develop","Deliver"],h:"Are you learning about the problem, framing it, generating many solutions, or testing and narrowing them?",d:{Discover:"understanding the problem by talking to the people affected",Define:"framing the design challenge from those insights",Develop:"creating many different responses (brainstorming, competitors)",Deliver:"testing solutions at small scale and rejecting or improving them"},s:[
+["Interviewing nurses about problems with their current medication app.","Discover"],["Writing the problem statement: “Night-shift nurses need to check doses without waking patients.”","Define"],["Brainstorming 20 ideas and studying competing apps.","Develop"],["Testing two prototypes with five nurses and dropping the weaker one.","Deliver"]]},
+{c:"Impairment type",L:"L1",o:["Permanent","Temporary","Situational"],h:"Will it last for life, go away after a while, or depend only on the current situation?",d:{Permanent:"lasting (e.g. born deaf, lost a limb)",Temporary:"goes away with time (e.g. broken wrist, recovering from surgery)",Situational:"caused by the context (e.g. bright sunlight, holding a baby)"},s:[
+["A user who was born deaf.","Permanent"],["A user with a broken wrist in a cast.","Temporary"],["A user trying to read a screen in bright sunlight.","Situational"],["A parent holding a baby, using the phone one-handed.","Situational"],["Someone recovering from eye surgery for a few weeks.","Temporary"],["A user who lost an arm in an accident.","Permanent"]]},
+{c:"Interview type",L:"L5",o:["Structured","Unstructured","Semi-structured","Focus group"],h:"How fixed are the questions, and how many people take part at once?",d:{"Structured":"the same predetermined, mostly closed questions in the same order for everyone","Unstructured":"an open, exploratory conversation with probing","Semi-structured":"a basic script with closed and open questions plus probes","Focus group":"a group of 3–10 people led by a trained facilitator"},s:[
+["Ten closed questions asked in the same order to every participant.","Structured"],["A loose conversation about how people manage photos, with “tell me more” probes.","Unstructured"],["A script of topics with both closed and open questions, plus follow-up probes.","Semi-structured"],["Six users discuss a prototype together, led by a facilitator.","Focus group"]]},
+{c:"Assumption or claim",L:"L3",o:["Assumption","Claim"],h:"Is it something taken for granted, or a prediction about what will happen if you do something?",d:{Assumption:"taking something for granted that still needs investigation",Claim:"a statement of what will happen if an action is taken or a product is introduced"},s:[
+["“Most of our users only open the app at night.” (No one has checked.)","Assumption"],["“Adding dark mode will increase daily use by 20%.”","Claim"],["“Everyone already knows how to use swipe gestures.”","Assumption"],["“Removing bookmarks will make the browser simpler and win users back.”","Claim"]]},
+{c:"Observation method",L:"L5",o:["Think-aloud","Diary study","Experience sampling (ESM)","Interaction logging","Ethnography"],h:"Who records the data, when, and for how long?",d:{"Think-aloud":"participants say their thoughts aloud during a task","Diary study":"participants self-report over time","Experience sampling (ESM)":"random or strategic prompts with immediate capture","Interaction logging":"the system records keys, clicks, time and navigation","Ethnography":"long-term participant observation, treating everything as strange"},s:[
+["Participants get phone prompts at random times asking what they're doing right now.","Experience sampling (ESM)"],["Participants describe their thoughts aloud while booking a flight in the lab.","Think-aloud"],["Each evening for three weeks, participants write about how they used the app that day.","Diary study"],["The app silently records every click and timestamp.","Interaction logging"],["A researcher spends months working alongside a design team, treating everything as strange.","Ethnography"]]},
+{c:"How the metaphor is used",L:"L3",o:["Conceptualizing what we're doing","Conceptual model at the interface level","Visualizing an operation"],h:"Does the metaphor name an activity, structure the whole interface, or picture a single action?",d:{"Conceptualizing what we're doing":"the metaphor names the activity itself","Conceptual model at the interface level":"the whole interface is built around the metaphor","Visualizing an operation":"an icon or image pictures one action"},s:[
+["Calling real-time video broadcasting “live streaming”.","Conceptualizing what we're doing"],["An app built around a stack of swipeable cards.","Conceptual model at the interface level"],["A shopping-cart icon that fills up as you add items.","Visualizing an operation"],["A trash-can icon you drop files onto to delete them.","Visualizing an operation"]]}
+];
+GEN.classify=()=>{
+  const cs=shuffle(CATS).slice(0,4);
+  return {tag:"Concepts · Classify",title:"Name the concept",ctx:'<p>Four scenarios from different lectures. Pick the best label for each one.</p>',
+  steps:cs.map(c=>{const [txt,a]=pick(c.s),w=shuffle(c.o.filter(x=>x!==a));
+    return choice('<span class="muted">'+c.L+' · '+c.c+'</span><br>'+txt,[a].concat(c.o.filter(x=>x!==a)),[c.h,c.o.length>2?"It's not "+w.slice(0,c.o.length-2).join(" or ")+".":c.o.map(x=>"<b>"+x+"</b>: "+c.d[x]).join("<br>")],"<b>"+a+"</b>: "+c.d[a]+".")})};
+};
+
+const GT={math:[["anova","ANOVA by hand"],["table","Complete the table"],["df","Degrees of freedom"],["survey","Survey stats"],["errors","p-values & errors"]],con:[["design","Study design"],["scale","Measurement scales"],["classify","Classify scenarios"],["mix","Surprise me"]]};
+let gTopic=store.get("gtopic","anova");if(!GEN[gTopic]&&gTopic!=="mix")gTopic="anova";
+let G=null;const gs={done:0,solved:0,hints:0};
+function gChips(){["math","con"].forEach(r=>{const el=$("#g-"+r);el.innerHTML="";GT[r].forEach(([v,lab])=>{const b=document.createElement("button");b.className="chip";b.textContent=lab;b.setAttribute("aria-pressed",String(v===gTopic));b.onclick=()=>{gTopic=v;store.set("gtopic",v);gChips();gNew()};el.appendChild(b)})})}
+function gNew(){
+  G=GEN[gTopic==="mix"?pick(Object.keys(GEN)):gTopic]();G.cur=0;
+  G.steps.forEach(s=>{s.h=0;s.st="open";s.vals={};s.fs={};s.bad=[];s.msg=""});
+  gRender();
+}
+const fmtAns=a=>Number.isInteger(a)?String(a):String(Math.round(a*100)/100);
+function gRender(){
+  let h='<div class="eyebrow">'+G.tag+'</div><h2 class="gtitle">'+G.title+'</h2><div class="gctx">'+G.ctx+'</div><div class="gsteps">';
+  G.steps.forEach((s,i)=>{
+    const lock=i>G.cur,open=s.st==="open";
+    h+='<div class="gstep'+(s.st==="ok"?" done":s.st==="shown"?" shown":lock?" locked":"")+'"><div class="sq"><span class="sn">Step '+(i+1)+' of '+G.steps.length+(s.st==="ok"?" · solved ✓":s.st==="shown"?" · answer shown":"")+'</span>'+s.q+'</div>';
+    if(!lock){
+      if(s.fields) h+='<div class="gfields">'+s.fields.map((f,j)=>'<label>'+f.l.replace(/_(\w)$/,"<sub>$1</sub>")+'<input type="number" step="any" inputmode="decimal" id="gf-'+i+'-'+j+'" value="'+(s.vals[j]??"")+'"'+(open?"":" disabled")+(s.fs[j]?' class="'+s.fs[j]+'"':"")+'></label>').join("")+'</div>';
+      else h+='<div class="gopts">'+s.options.map((o,j)=>{const c=s.bad.includes(j)?" wrong":(!open&&j===s.answer)?" right":"";return '<button class="opt'+c+'" data-act="pick" data-i="'+i+'" data-j="'+j+'"'+(open&&!s.bad.includes(j)?"":" disabled")+'>'+o+'</button>'}).join("")+'</div>';
+      for(let k=0;k<s.h;k++) h+='<div class="hint"><b>Hint '+(k+1)+'</b>'+s.hints[k]+'</div>';
+      if(open&&s.msg) h+='<div class="gmsg verdict-no">'+s.msg+'</div>';
+      if(!open) h+='<div class="expl">'+s.explain+'</div>';
+      else h+='<div class="row">'+(s.fields?'<button class="btn primary" data-act="check" data-i="'+i+'">Check</button>':'')+(s.h<s.hints.length?'<button class="btn" data-act="hint" data-i="'+i+'">Hint ('+(s.hints.length-s.h)+' left)</button>':'')+'<button class="btn" data-act="show" data-i="'+i+'">Show answer</button></div>';
+    }
+    h+='</div>';
+  });
+  h+='</div>';
+  if(G.cur>=G.steps.length){const ok=G.steps.filter(s=>s.st==="ok").length,hu=G.steps.reduce((a,s)=>a+s.h,0);h+='<div class="gdone"><span><b>Problem complete.</b> You solved '+ok+' of '+G.steps.length+' steps yourself and used '+hu+' hint'+(hu===1?"":"s")+'.</span><button class="btn primary" data-act="next">Next problem →</button></div>'}
+  $("#g-box").innerHTML=h;
+  $("#g-stats").textContent="This session: "+gs.done+" problem"+(gs.done===1?"":"s")+" finished · "+gs.solved+" steps solved yourself · "+gs.hints+" hints";
+}
+function gCheck(s){
+  let ok=0,filled=0;
+  s.fields.forEach((f,j)=>{const raw=s.vals[j];if(raw==null||raw===""){s.fs[j]="";return}filled++;const good=Math.abs(+raw-f.a)<=(f.t??Math.max(.06,Math.abs(f.a)*.005));s.fs[j]=good?"ok":"no";if(good)ok++});
+  if(ok===s.fields.length){s.st="ok";s.msg="";G.cur++;gs.solved++;return true}
+  s.msg=filled?ok+" of "+s.fields.length+" correct."+(s.h<s.hints.length?" Try a hint.":" Compare with the hints, or show the answer."):"Type your answer first.";
+  return false;
+}
+function gAfter(adv,refocus){
+  if(G.cur>=G.steps.length&&!G.counted){G.counted=true;gs.done++}
+  gRender();
+  const box=$("#g-box");
+  if(adv){const el=box.querySelectorAll(".gstep")[G.cur]||box.querySelector(".gdone");if(el)el.scrollIntoView({block:"nearest"})}
+  else if(refocus){const bad=box.querySelector("input.no")||box.querySelector(".gstep:not(.locked):not(.done):not(.shown) input");if(bad)bad.focus()}
+}
+$("#g-box").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;
+  const act=b.dataset.act;if(act==="next"){gNew();$("#v-guided").scrollIntoView({block:"start"});window.scrollTo(0,0);return}
+  const s=G.steps[+b.dataset.i];let adv=false;
+  if(act==="hint"){s.h++;gs.hints++}
+  else if(act==="show"){s.st="shown";if(s.fields)s.fields.forEach((f,j)=>{s.vals[j]=fmtAns(f.a);s.fs[j]=""});G.cur++;adv=true}
+  else if(act==="check")adv=gCheck(s);
+  else if(act==="pick"){const j=+b.dataset.j;if(j===s.answer){s.st="ok";s.msg="";G.cur++;gs.solved++;adv=true}else{s.bad.push(j);s.msg="Not that one."+(s.h<s.hints.length?" Try a hint.":"")}}
+  gAfter(adv,act==="check");
+});
+$("#g-box").addEventListener("input",e=>{const m=e.target.id.match(/^gf-(\d+)-(\d+)$/);if(m)G.steps[+m[1]].vals[+m[2]]=e.target.value});
+$("#g-box").addEventListener("keydown",e=>{const m=e.key==="Enter"&&e.target.id&&e.target.id.match(/^gf-(\d+)-/);if(m){e.preventDefault();gAfter(gCheck(G.steps[+m[1]]),true)}});
+$("#g-new").onclick=gNew;
+gChips();gNew();
 
 /* ---------- essays ---------- */
 $("#es-list").innerHTML=ESSAYS.map(x=>'<details class="q"><summary><span class="tag">'+LN[x.l]+'</span><span>'+esc(x.q)+'</span></summary><div class="ans">'+x.a+'</div></details>').join("");
